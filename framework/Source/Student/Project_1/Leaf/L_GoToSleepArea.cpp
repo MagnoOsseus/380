@@ -24,6 +24,14 @@ void L_GoToSleepArea::on_enter()
 
 void L_GoToSleepArea::on_update(float dt)
 {
+	// If panic starts while heading to the roost, abort so the panic branch can run.
+	if (FarmSim::panic_active() == true || FarmSim::wolf_alert_active() == true)
+	{
+		on_failure();
+		display_leaf_text();
+		return;
+	}
+
 	const auto delta = agent->get_position() - targetSleepArea;
 	const float distSq = delta.LengthSquared();
 
