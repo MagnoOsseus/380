@@ -7,7 +7,7 @@ L_FightOtherChicken::L_FightOtherChicken() : fightTimer(0.0f)
 
 void L_FightOtherChicken::on_enter()
 {
-    fightTimer = 0.0f;
+    fightTimer = RNG::range(2.0f, 4.0f);
     BehaviorNode::on_leaf_enter();
 }
 
@@ -24,19 +24,13 @@ void L_FightOtherChicken::on_update(float dt)
 
     if (FarmSim::is_near(agent, other, 2.0f) == false)
     {
-        // Move toward the other chicken and reset fight timer until contact.
-        fightTimer = 0.0f;
+        // Move toward the other chicken until contact.
         agent->move_toward_point(other->get_position(), dt);
         display_leaf_text();
         return;
     }
 
-    // Within fighting range - count the fight duration.
-    if (fightTimer <= 0.0f)
-    {
-        fightTimer = RNG::range(2.0f, 4.0f);
-    }
-
+    // Within fighting range - count down fight duration.
     fightTimer -= dt;
     if (fightTimer <= 0.0f)
     {
