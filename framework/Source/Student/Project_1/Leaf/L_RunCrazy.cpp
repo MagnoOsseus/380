@@ -4,6 +4,7 @@
 
 void L_RunCrazy::on_update(float dt)
 {
+    // Panic ended — clean up and succeed
     if (FarmSim::panic_active() == false)
     {
         FarmSim::state().wanderTargets.erase(agent->get_id());
@@ -15,6 +16,7 @@ void L_RunCrazy::on_update(float dt)
     auto &state = FarmSim::state();
     const size_t id = agent->get_id();
 
+    // Pick a new random target if we don't have one
     auto result = state.wanderTargets.find(id);
     if (result == state.wanderTargets.end())
     {

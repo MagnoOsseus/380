@@ -13,6 +13,7 @@ void L_FightOtherChicken::on_enter()
 
 void L_FightOtherChicken::on_update(float dt)
 {
+    // Panic takes priority — abort fight
     if (FarmSim::panic_active() == true)
     {
         on_failure();
@@ -29,6 +30,7 @@ void L_FightOtherChicken::on_update(float dt)
         return;
     }
 
+    // Move toward the target until close enough
     if (FarmSim::is_near(agent, other, 2.0f) == false)
     {
         agent->move_toward_point(other->get_position(), dt);
@@ -36,6 +38,7 @@ void L_FightOtherChicken::on_update(float dt)
         return;
     }
 
+    // In range — count down the fight
     fightTimer -= dt;
     if (fightTimer <= 0.0f)
     {

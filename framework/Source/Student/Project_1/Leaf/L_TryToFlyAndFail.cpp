@@ -10,6 +10,7 @@ void L_TryToFlyAndFail::on_update(float dt)
 
     auto &timer = timerByAgent[agent->get_id()];
 
+    // Abort if panic fires mid-attempt
     if (FarmSim::panic_active() == true)
     {
         timerByAgent.erase(agent->get_id());

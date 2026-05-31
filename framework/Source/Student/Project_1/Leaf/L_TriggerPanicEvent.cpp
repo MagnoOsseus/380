@@ -4,6 +4,7 @@
 
 void L_TriggerPanicEvent::on_update(float)
 {
+    // Only trigger if panic isn't already running
     if (FarmSim::panic_active() == false)
     {
         FarmSim::trigger_panic(12.0, 14.0);

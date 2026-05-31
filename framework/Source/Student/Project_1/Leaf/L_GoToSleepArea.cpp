@@ -8,6 +8,7 @@ L_GoToSleepArea::L_GoToSleepArea() : arrivalRadius(3.0f)
 
 void L_GoToSleepArea::on_enter()
 {
+	// Wolf goes to the den; chickens/roosters go to the roost
 	if (agent->get_type() == "Wolf")
 	{
 		targetSleepArea = FarmSim::get_wolf_den();
@@ -22,6 +23,7 @@ void L_GoToSleepArea::on_enter()
 
 void L_GoToSleepArea::on_update(float dt)
 {
+	// Abort if panic or wolf alert fires mid-travel
 	if (FarmSim::panic_active() == true || FarmSim::wolf_alert_active() == true)
 	{
 		on_failure();

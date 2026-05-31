@@ -9,6 +9,7 @@ void L_FleeToSafety::on_update(float dt)
 
     if (reached == true)
     {
+        // Clear alert once the wolf reaches safety
         FarmSim::clear_wolf_alert_only();
         FarmSim::clear_wolf_target(agent->get_id());
         on_success();

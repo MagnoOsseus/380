@@ -3,6 +3,7 @@
 
 void L_WantsToFly::on_update(float)
 {
+    // 20% random chance to attempt a fly
     if (RNG::range(0, 100) < 20)
     {
         on_success();

@@ -4,6 +4,7 @@
 
 void L_ChaseWolf::on_update(float dt)
 {
+    // Wolf alert cleared — farmer can stop chasing
     if (FarmSim::wolf_alert_active() == false)
     {
         on_success();
