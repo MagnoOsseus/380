@@ -68,6 +68,14 @@ namespace FarmSim
         g_state.wolfAlertUntil = 0.0;
     }
 
+    void clear_wolf_alert_only()
+    {
+        // Only stop the wolf-alert so the farmer stops chasing.
+        // The chicken panic is allowed to continue for its full duration.
+        g_state.wolfAlert = false;
+        g_state.wolfAlertUntil = 0.0;
+    }
+
     bool panic_active()
     {
         if (g_state.panicActive == true && now() >= g_state.panicUntil)

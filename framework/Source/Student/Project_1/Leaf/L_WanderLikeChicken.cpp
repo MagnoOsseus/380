@@ -13,7 +13,7 @@ void L_WanderLikeChicken::on_update(float dt)
 
     if (timer <= 0.0f)
     {
-        timer = 2.0f;
+        timer = RNG::range(5.0f, 8.0f);
         state.wanderTargets[id] = FarmSim::random_point_near(agent->get_position(), 8.0f);
     }
 

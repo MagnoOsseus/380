@@ -8,7 +8,7 @@ L_SleepDaytime::L_SleepDaytime() : sleepTimer(0.0f)
 
 void L_SleepDaytime::on_enter()
 {
-    sleepTimer = RNG::range(6.0f, 12.0f);
+    sleepTimer = RNG::range(15.0f, 25.0f);
     BehaviorNode::on_leaf_enter();
 }
 
