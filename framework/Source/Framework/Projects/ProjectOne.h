@@ -32,10 +32,12 @@ public:
 private:
     void build_ui();
     void link_input();
-    std::wstring get_day_cycle_text();
+    const std::wstring &get_day_cycle_text();
 
     void on_f2();
     void on_f3();
 
     void setup();
+
+    std::wstring dayCycleText;
 };
