@@ -14,8 +14,6 @@ void L_GoToSleep::on_enter()
 
 void L_GoToSleep::on_update(float dt)
 {
-    // Sleep is an interruptible running state.
-    // If panic/alert happens at night, fail immediately so selectors can switch to panic branches.
     if (FarmSim::panic_active() == true || FarmSim::wolf_alert_active() == true)
     {
         on_failure();

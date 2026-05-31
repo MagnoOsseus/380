@@ -12,7 +12,6 @@ void L_CutDown::on_enter()
 
 void L_CutDown::on_update(float dt)
 {
-    // Only allow chopping once per day.
     if (FarmSim::farmer_can_chop_today(agent->get_id()) == false)
     {
         on_failure();

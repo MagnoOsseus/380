@@ -4,7 +4,6 @@
 
 void L_ChaseWolf::on_update(float dt)
 {
-    // Stop chasing as soon as the wolf alert clears; chicken panic can continue independently.
     if (FarmSim::wolf_alert_active() == false)
     {
         on_success();

@@ -17,7 +17,6 @@ void L_FeedAnimals::on_update(float dt)
     feedTimer -= dt;
     if (feedTimer <= 0.0f)
     {
-        // Feed all chickens and the rooster.
         const auto &chickens = agents->get_all_agents_by_type("Chicken");
         for (auto *base : chickens)
         {

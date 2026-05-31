@@ -13,7 +13,6 @@ void L_FightOtherChicken::on_enter()
 
 void L_FightOtherChicken::on_update(float dt)
 {
-    // Abort if panic fires — fleeing takes priority over fighting.
     if (FarmSim::panic_active() == true)
     {
         on_failure();
@@ -32,13 +31,11 @@ void L_FightOtherChicken::on_update(float dt)
 
     if (FarmSim::is_near(agent, other, 2.0f) == false)
     {
-        // Move toward the other chicken until contact.
         agent->move_toward_point(other->get_position(), dt);
         display_leaf_text();
         return;
     }
 
-    // Within fighting range - count down fight duration.
     fightTimer -= dt;
     if (fightTimer <= 0.0f)
     {

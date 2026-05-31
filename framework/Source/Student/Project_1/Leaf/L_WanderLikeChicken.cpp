@@ -11,8 +11,6 @@ void L_WanderLikeChicken::on_update(float dt)
     static std::unordered_map<size_t, float> timerByAgent;
     auto &timer = timerByAgent[id];
 
-    // If panic fires, abort immediately so the root selector can restart and
-    // enter the panic branch on the very next tick.
     if (FarmSim::panic_active() == true)
     {
         timerByAgent.erase(id);

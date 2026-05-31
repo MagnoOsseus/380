@@ -14,7 +14,6 @@ void L_SleepDaytime::on_enter()
 
 void L_SleepDaytime::on_update(float dt)
 {
-    // Interrupt sleep if panic/alert occurs or night falls.
     if (FarmSim::panic_active() == true || FarmSim::wolf_alert_active() == true || FarmSim::is_daytime() == false)
     {
         on_failure();

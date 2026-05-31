@@ -4,7 +4,6 @@
 
 void L_MakePanicNoise::on_update(float)
 {
-    // Only scream while panic is active.
     if (FarmSim::panic_active() == true)
     {
         audioManager->PlaySoundEffect(L"Assets\\Audio\\retro.wav");
