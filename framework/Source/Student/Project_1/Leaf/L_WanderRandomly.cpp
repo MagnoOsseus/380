@@ -13,7 +13,7 @@ void L_WanderRandomly::on_update(float dt)
 
     if (timer <= 0.0f)
     {
-        timer = 2.0f;
+        timer = 4.2f;
         state.wanderTargets[id] = FarmSim::random_map_point();
     }
 
