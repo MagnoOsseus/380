@@ -1,7 +1,7 @@
 TREENAME(Farmer)
 TREENODE(C_Selector, 0)
 TREENODE(C_Sequencer, 1)
-TREENODE(L_HearChickenPanic, 2)
+TREENODE(L_WolfAlertActive, 2)
 TREENODE(L_WakeUp, 2)
 TREENODE(L_ChaseWolf, 2)
 TREENODE(C_Sequencer, 1)

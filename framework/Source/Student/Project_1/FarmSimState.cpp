@@ -33,7 +33,7 @@ namespace FarmSim
     bool is_nighttime()
     {
         const double h = hour_of_day();
-        return (h >= 22.0 || h < 6.0);
+        return (h >= NightStartHour && h < NightEndHour);
     }
 
     bool is_daytime()
