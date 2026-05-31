@@ -4,55 +4,77 @@
 
 void ProjectOne::setup()
 {
-    // Create an agent (using the default "Agent::AgentModel::Man" model)
-    auto man = agents->create_behavior_agent("ExampleAgent", BehaviorTreeTypes::Example);
-
-    // You can change properties here or at runtime from a behavior tree leaf node
-    // Look in Agent.h for all of the setters, like these:
-    // man->set_color(Vec3(1, 0, 1));
-    // man->set_scaling(Vec3(7,7,7));
-    // man->set_position(Vec3(100, 0, 100));
-
-    // Create an agent with a different 3D model:
-    // 1. (optional) Add a new 3D model to the framework other than the ones provided:
-    //    A. Find a ".sdkmesh" model or use https://github.com/walbourn/contentexporter
-    //       to convert fbx files (many end up corrupted in this process, so good luck!)
-    //    B. Add a new AgentModel enum for your model in Agent.h (like the existing Man or Tree).
-    // 2. Register the new model with the engine, so it associates the file path with the enum
-    //    A. Here we are registering all of the extra models that already come in the package.
     Agent::add_model("Assets\\tree.sdkmesh", Agent::AgentModel::Tree);
     Agent::add_model("Assets\\car.sdkmesh", Agent::AgentModel::Car);
     Agent::add_model("Assets\\bird.sdkmesh", Agent::AgentModel::Bird);
     Agent::add_model("Assets\\ball.sdkmesh", Agent::AgentModel::Ball);
     Agent::add_model("Assets\\hut.sdkmesh", Agent::AgentModel::Hut);
-    // 3. Create the agent, giving it the correct AgentModel type.
-    auto tree = agents->create_behavior_agent("ExampleAgent2", BehaviorTreeTypes::Example, Agent::AgentModel::Tree);
-    // 4. (optional) You can also set the pitch of the model, if you want it to be rotated differently
-    tree->set_pitch(PI / 2);
-    // 5. (optional) Set other aspects to make it start out correctly
-    tree->set_color(Vec3(0, 0.5, 0));   // Set the tree to green
 
-    // You can technically load any map you want, even create your own map file,
-    // but behavior agents won't actually avoid walls or anything special, unless you code
-    // that yourself (that's the realm of project 2)
-    terrain->goto_map(0);
+    // Main character: uses Farmer behavior so it can handle lunch/home/sleep states
+    auto man = agents->create_behavior_agent("Farmer", BehaviorTreeTypes::Farmer);
+    man->set_scaling(0.8f);
+    man->set_position(Vec3(58.0f, 0.0f, 50.0f));
 
-    // You can also enable the pathing layer and set grid square colors as you see fit.
-    // Works best with map 0, the completely blank map
+    // Cabin where the character can eat and sleep
+    auto cabin = agents->create_behavior_agent("Cabin", BehaviorTreeTypes::Idle, Agent::AgentModel::Hut);
+    cabin->set_position(Vec3(40.0f, 0.0f, 50.0f));
+    cabin->set_scaling(0.35f);
+
+    // Chickens
+    auto chicken1 = agents->create_behavior_agent("Chicken", BehaviorTreeTypes::Chicken, Agent::AgentModel::Bird);
+    chicken1->set_scaling(0.010f);
+    chicken1->set_position(Vec3(70.0f, 0.0f, 38.0f));
+    chicken1->set_movement_speed(8.0f);
+
+    auto chicken2 = agents->create_behavior_agent("Chicken", BehaviorTreeTypes::Chicken, Agent::AgentModel::Bird);
+    chicken2->set_scaling(0.010f);
+    chicken2->set_position(Vec3(76.0f, 0.0f, 42.0f));
+    chicken2->set_movement_speed(8.0f);
+
+    auto chicken3 = agents->create_behavior_agent("Chicken", BehaviorTreeTypes::Chicken, Agent::AgentModel::Bird);
+    chicken3->set_scaling(0.010f);
+    chicken3->set_position(Vec3(72.0f, 0.0f, 46.0f));
+    chicken3->set_movement_speed(8.0f);
+
+    // Rooster
+    auto rooster = agents->create_behavior_agent("Rooster", BehaviorTreeTypes::Rooster, Agent::AgentModel::Bird);
+    rooster->set_scaling(0.012f);
+    rooster->set_position(Vec3(66.0f, 0.0f, 44.0f));
+    rooster->set_color(Vec3(0.85f, 0.25f, 0.2f));
+    rooster->set_movement_speed(9.0f);
+
+    // Wolf represented by a ball mesh
+    auto wolf = agents->create_behavior_agent("Wolf", BehaviorTreeTypes::Wolf, Agent::AgentModel::Ball);
+    wolf->set_scaling(0.55f);
+    wolf->set_position(Vec3(18.0f, 0.0f, 20.0f));
+    wolf->set_color(Vec3(0.2f, 0.2f, 0.2f));
+    wolf->set_movement_speed(11.0f);
+
+    // Trees to chop - placed together away from the cabin
+    auto tree1 = agents->create_behavior_agent("Tree", BehaviorTreeTypes::Idle, Agent::AgentModel::Tree);
+    tree1->set_pitch(PI / 2);
+    tree1->set_scaling(0.75f);
+    tree1->set_color(Vec3(0, 0.5f, 0));
+    tree1->set_position(Vec3(20.0f, 0.0f, 72.0f));
+
+    auto tree2 = agents->create_behavior_agent("Tree", BehaviorTreeTypes::Idle, Agent::AgentModel::Tree);
+    tree2->set_pitch(PI / 2);
+    tree2->set_scaling(0.75f);
+    tree2->set_color(Vec3(0, 0.5f, 0));
+    tree2->set_position(Vec3(28.0f, 0.0f, 78.0f));
+
+    // Use latest map (includes the new scenario map)
+    if (terrain->num_maps() > 0)
+    {
+        terrain->goto_map(static_cast<unsigned>(terrain->num_maps() - 1));
+    }
+
     terrain->pathLayer.set_enabled(true);
-    terrain->pathLayer.set_value(0, 0, Colors::Red);
 
-    // Camera position can be modified from this default
     auto camera = agents->get_camera_agent();
     camera->set_position(Vec3(-62.0f, 70.0f, terrain->mapSizeInWorld * 0.5f));
     camera->set_pitch(0.610865); // 35 degrees
 
-    // Sound control (these sound functions can be kicked off in a behavior tree node - see the example in L_PlaySound.cpp)
     audioManager->SetVolume(0.5f);
     audioManager->PlaySoundEffect(L"Assets\\Audio\\retro.wav");
-    // Uncomment for example on playing music in the engine (must be .wav)
-    // audioManager->PlayMusic(L"Assets\\Audio\\motivate.wav");
-    // audioManager->PauseMusic(...);
-    // audioManager->ResumeMusic(...);
-    // audioManager->StopMusic(...);
 }
