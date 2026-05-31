@@ -27,8 +27,8 @@ struct FarmSimState
 namespace FarmSim
 {
     constexpr double DayCycleSeconds = 120.0;
-    constexpr double NightDurationHours = 4.0;
-    constexpr double NightStartHour = 2.0;
+    constexpr double NightDurationHours = 10.0;
+    constexpr double NightStartHour = 20.0;
     constexpr double NightEndHour = NightStartHour + NightDurationHours;
 
     FarmSimState &state();
