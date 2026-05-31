@@ -13,6 +13,14 @@ void L_FightOtherChicken::on_enter()
 
 void L_FightOtherChicken::on_update(float dt)
 {
+    // Abort if panic fires — fleeing takes priority over fighting.
+    if (FarmSim::panic_active() == true)
+    {
+        on_failure();
+        display_leaf_text();
+        return;
+    }
+
     auto *other = FarmSim::nearest_chicken(agent->get_position(), agent);
 
     if (other == nullptr)

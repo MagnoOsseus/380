@@ -14,6 +14,14 @@ void L_GoToWaitForFood::on_enter()
 
 void L_GoToWaitForFood::on_update(float dt)
 {
+	// Abort if panic fires — rooster/chicken should flee, not eat.
+	if (FarmSim::panic_active() == true)
+	{
+		on_failure();
+		display_leaf_text();
+		return;
+	}
+
 	const auto delta = agent->get_position() - feedingArea;
 	const float distSq = delta.LengthSquared();
 

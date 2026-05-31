@@ -13,6 +13,14 @@ void L_FollowChickens::on_enter()
 
 void L_FollowChickens::on_update(float dt)
 {
+    // Abort if panic fires — following chickens can wait; fleeing cannot.
+    if (FarmSim::panic_active() == true)
+    {
+        on_failure();
+        display_leaf_text();
+        return;
+    }
+
     auto *closest = FarmSim::nearest_chicken(agent->get_position(), nullptr);
 
     if (closest == nullptr)

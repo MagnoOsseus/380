@@ -14,6 +14,14 @@ void L_WaitForFood::on_enter()
 
 void L_WaitForFood::on_update(float dt)
 {
+	// If panic starts while waiting, abort so the panic branch can run.
+	if (FarmSim::panic_active() == true)
+	{
+		on_failure();
+		display_leaf_text();
+		return;
+	}
+
 	// If it becomes nighttime, stop waiting and go to sleep instead.
 	if (FarmSim::is_nighttime() == true)
 	{
