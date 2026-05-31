@@ -7,7 +7,7 @@ L_FollowChickens::L_FollowChickens() : followTimer(0.0f)
 
 void L_FollowChickens::on_enter()
 {
-    followTimer = 3.0f;
+    followTimer = 4.5f;
     BehaviorNode::on_leaf_enter();
 }
 
@@ -25,7 +25,7 @@ void L_FollowChickens::on_update(float dt)
     // If rooster is very close to a chicken, stop and do other things.
     if (FarmSim::is_near(agent, closest, 3.5f) == true)
     {
-        on_success();
+        on_failure();
         display_leaf_text();
         return;
     }
@@ -33,10 +33,10 @@ void L_FollowChickens::on_update(float dt)
     agent->move_toward_point(closest->get_position(), dt);
     followTimer -= dt;
 
-    // After 3 seconds of following, succeed so behavior tree moves to other branches.
+    // After a visible chase window, fail so selector can try other branches.
     if (followTimer <= 0.0f)
     {
-        on_success();
+        on_failure();
     }
 
     display_leaf_text();
