@@ -8,7 +8,7 @@ L_GoToSleep::L_GoToSleep() : sleepTimer(0.0f)
 
 void L_GoToSleep::on_enter()
 {
-    sleepTimer = RNG::range(3.0f, 5.0f);
+    sleepTimer = RNG::range(8.0f, 12.0f);
     BehaviorNode::on_leaf_enter();
 }
 

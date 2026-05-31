@@ -38,6 +38,7 @@ namespace FarmSim
 
     void trigger_panic(double panicDuration = 20.0, double alertDuration = 20.0);
     void clear_alert();
+    void clear_wolf_alert_only();
     bool panic_active();
     bool wolf_alert_active();
 
