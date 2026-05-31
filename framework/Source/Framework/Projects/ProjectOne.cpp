@@ -105,12 +105,12 @@ void ProjectOne::build_ui()
     ui->create_value_text_field(UIAnchor::TOP_LEFT, 90, 32, L"FPS:", fpsGetter);
 
     TextGetter dayCycleGetter = std::bind(&ProjectOne::get_day_cycle_text, this);
-    ui->create_value_text_field(UIAnchor::TOP_RIGHT, -170, 64, L"Momento:", dayCycleGetter);
+    ui->create_value_text_field(UIAnchor::TOP_RIGHT, -170, 64, L"Moment:", dayCycleGetter);
 }
 
 const std::wstring &ProjectOne::get_day_cycle_text()
 {
-    dayCycleText = FarmSim::is_nighttime() ? L"Noche" : L"Dia";
+    dayCycleText = FarmSim::is_nighttime() ? L"Night" : L"Day";
     return dayCycleText;
 }
 
