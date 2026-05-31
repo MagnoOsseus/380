@@ -283,6 +283,18 @@
     <ClInclude Include="Source\Student\Project_1\ControlFlow\C_Sequencer.h">
       <Filter>Source\Student\Project_1\ControlFlow</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Student\Project_1\Decorator\D_Cooldown.h">
+      <Filter>Source\Student\Project_1\Decorator</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Student\Project_1\Decorator\D_CooldownFight.h">
+      <Filter>Source\Student\Project_1\Decorator</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Student\Project_1\Decorator\D_CooldownFly.h">
+      <Filter>Source\Student\Project_1\Decorator</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Student\Project_1\Decorator\D_DaytimeOnly.h">
+      <Filter>Source\Student\Project_1\Decorator</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Student\Project_1\Decorator\D_Delay.h">
       <Filter>Source\Student\Project_1\Decorator</Filter>
     </ClInclude>
@@ -626,6 +638,18 @@
     </ClCompile>
     <ClCompile Include="Source\Student\Project_1\ControlFlow\C_Sequencer.cpp">
       <Filter>Source\Student\Project_1\ControlFlow</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Student\Project_1\Decorator\D_Cooldown.cpp">
+      <Filter>Source\Student\Project_1\Decorator</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Student\Project_1\Decorator\D_CooldownFight.cpp">
+      <Filter>Source\Student\Project_1\Decorator</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Student\Project_1\Decorator\D_CooldownFly.cpp">
+      <Filter>Source\Student\Project_1\Decorator</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Student\Project_1\Decorator\D_DaytimeOnly.cpp">
+      <Filter>Source\Student\Project_1\Decorator</Filter>
     </ClCompile>
     <ClCompile Include="Source\Student\Project_1\Decorator\D_Delay.cpp">
       <Filter>Source\Student\Project_1\Decorator</Filter>
