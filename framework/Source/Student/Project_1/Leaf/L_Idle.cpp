@@ -25,7 +25,6 @@ void L_Idle::on_update(float dt)
 {
     if (std::strcmp(agent->get_type(), "Farmer") == 0)
     {
-        auto &state = FarmSim::state();
         const size_t id = agent->get_id();
 
         static std::unordered_map<size_t, Vec3> playTargetByAgent;
@@ -46,7 +45,6 @@ void L_Idle::on_update(float dt)
         if (timer < 0.0f)
         {
             playTargetByAgent.erase(id);
-            state.wanderTargets.erase(id);
             on_success();
         }
 
