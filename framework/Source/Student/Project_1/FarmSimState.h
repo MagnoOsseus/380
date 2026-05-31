@@ -35,7 +35,6 @@ namespace FarmSim
 
     FarmSimState &state();
 
-    double now_seconds();
     double hour_of_day();
     bool is_nighttime();
     bool is_daytime();
@@ -55,7 +54,6 @@ namespace FarmSim
     BehaviorAgent *wolf_agent();
     BehaviorAgent *farmer_agent();
 
-    bool has_live_chickens();
     bool is_near(const BehaviorAgent *a, const BehaviorAgent *b, float radius);
 
     bool is_hungry(size_t agentId, double hungerIntervalSeconds = 18.0);
