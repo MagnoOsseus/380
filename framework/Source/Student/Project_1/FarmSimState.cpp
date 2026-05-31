@@ -52,12 +52,10 @@ namespace FarmSim
         g_state.panicActive = true;
         g_state.wolfAlert = true;
 
-        // Refresh both windows from "now" every time panic triggers so all chickens
-        // immediately switch to flee behavior and keep fleeing for the full duration.
         g_state.panicUntil = now() + panicDuration;
         g_state.wolfAlertUntil = now() + alertDuration;
 
-        // Force wolf to drop any stale target so it doesn't continue chain-eating.
+        // Force wolf to drop any stale target
         g_state.wolfTargetChickenByWolf.clear();
     }
 
