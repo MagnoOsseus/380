@@ -23,12 +23,6 @@ public:
 
     template <typename T>
     T get_value(const char *key) const;
-
-    template <typename T>
-    T get_value(const char *key, const T &defaultValue) const;
-
-    bool has_key(const char *key) const;
-    void erase(const char *key);
 private:
     // string pooling is enabled, so hashing the pointer directly should be fine
     std::unordered_map<const char *, std::any> data;
@@ -73,35 +67,4 @@ inline T Blackboard::get_value(const char *key) const
     // this really isn't a good thing to do, but it will allow you to continue
     // the debugging process if you really don't care about the value
     return T();
-}
-
-template<typename T>
-inline T Blackboard::get_value(const char *key, const T &defaultValue) const
-{
-    const auto result = data.find(key);
-
-    if (result == data.end())
-    {
-        return defaultValue;
-    }
-
-    try
-    {
-        return std::any_cast<T>(result->second);
-    }
-    catch (const std::bad_any_cast &)
-    {
-        __debugbreak();
-        return defaultValue;
-    }
-}
-
-inline bool Blackboard::has_key(const char *key) const
-{
-    return data.find(key) != data.end();
-}
-
-inline void Blackboard::erase(const char *key)
-{
-    data.erase(key);
 }
