@@ -13,7 +13,7 @@ written consent of DigiPen Institute of Technology is prohibited.
 
 #include <pch.h>
 #include "ProjectOne.h"
-#include "Student/Project_1/FarmSimState.h"
+#include "../Student/Project_1/FarmSimState.h"
 #include <iomanip>
 #include <sstream>
 
@@ -104,10 +104,10 @@ void ProjectOne::build_ui()
 
     // add some text on the left side for displaying fps
     TextGetter fpsGetter = std::bind(&Engine::get_fps_text, engine.get());
-    auto fpsText = ui->create_value_text_field(UIAnchor::TOP_LEFT, 90, 32, L"FPS:", fpsGetter);
+    ui->create_value_text_field(UIAnchor::TOP_LEFT, 90, 32, L"FPS:", fpsGetter);
 
     TextGetter dayCycleGetter = std::bind(&ProjectOne::get_day_cycle_text, this);
-    ui->create_value_text_field(UIAnchor::BOTTOM, fpsText, 10, L"Momento:", dayCycleGetter);
+    ui->create_value_text_field(UIAnchor::TOP_LEFT, 90, 64, L"Momento:", dayCycleGetter);
 }
 
 std::wstring ProjectOne::get_day_cycle_text()
