@@ -32,6 +32,7 @@ public:
 private:
     void build_ui();
     void link_input();
+    std::wstring get_day_cycle_text();
 
     void on_f2();
     void on_f3();

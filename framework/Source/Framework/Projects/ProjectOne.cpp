@@ -13,6 +13,9 @@ written consent of DigiPen Institute of Technology is prohibited.
 
 #include <pch.h>
 #include "ProjectOne.h"
+#include "Student/Project_1/FarmSimState.h"
+#include <iomanip>
+#include <sstream>
 
 
 bool ProjectOne::initialize()
@@ -102,6 +105,17 @@ void ProjectOne::build_ui()
     // add some text on the left side for displaying fps
     TextGetter fpsGetter = std::bind(&Engine::get_fps_text, engine.get());
     auto fpsText = ui->create_value_text_field(UIAnchor::TOP_LEFT, 90, 32, L"FPS:", fpsGetter);
+
+    TextGetter dayCycleGetter = std::bind(&ProjectOne::get_day_cycle_text, this);
+    ui->create_value_text_field(UIAnchor::BOTTOM, fpsText, 10, L"Momento:", dayCycleGetter);
+}
+
+std::wstring ProjectOne::get_day_cycle_text()
+{
+    std::wstringstream stream;
+    stream << (FarmSim::is_nighttime() ? L"Noche" : L"Dia")
+        << L" (" << std::fixed << std::setprecision(1) << FarmSim::hour_of_day() << L"h)";
+    return stream.str();
 }
 
 void ProjectOne::link_input()
@@ -122,4 +136,3 @@ void ProjectOne::on_f3()
 {
     engine->change_projects(Project::Type::THREE);
 }
-

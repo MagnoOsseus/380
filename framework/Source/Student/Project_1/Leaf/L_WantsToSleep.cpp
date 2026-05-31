@@ -4,7 +4,12 @@
 
 void L_WantsToSleep::on_update(float)
 {
-    if (FarmSim::is_daytime() == true && FarmSim::wolf_alert_active() == false)
+    const double hourOfDay = FarmSim::hour_of_day();
+    const bool inNapWindow = (hourOfDay >= 10.0 && hourOfDay < 16.0);
+
+    if (FarmSim::is_daytime() == true &&
+        inNapWindow == true &&
+        FarmSim::wolf_alert_active() == false)
     {
         on_success();
     }
