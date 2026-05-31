@@ -1,5 +1,5 @@
 #include "../Source/Student/Project_1/Trees/chicken.bht"
-#include "../Source/Student/Project_1/Trees/cock.bht"
+#include "../Source/Student/Project_1/Trees/rooster.bht"
 #include "../Source/Student/Project_1/Trees/Example.bht"
 #include "../Source/Student/Project_1/Trees/Farmer.bht"
 #include "../Source/Student/Project_1/Trees/Idle.bht"
