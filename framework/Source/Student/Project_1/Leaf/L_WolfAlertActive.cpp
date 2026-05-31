@@ -4,7 +4,7 @@
 
 void L_WolfAlertActive::on_update(float)
 {
-    if (FarmSim::wolf_alert_active() == true)
+    if (FarmSim::wolf_alert_active())
     {
         on_success();
     }

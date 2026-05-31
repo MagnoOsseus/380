@@ -4,7 +4,7 @@
 
 void L_IsNighttime::on_update(float)
 {
-    if (FarmSim::is_nighttime() == true)
+    if (FarmSim::is_nighttime())
     {
         on_success();
     }
