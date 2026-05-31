@@ -17,9 +17,6 @@
 #include "Decorator/D_RepeatFourTimes.h"
 
 // Student Decorator Nodes
-#include "Decorator/D_Inverter.h"
-#include "Decorator/D_Cooldown.h"
-#include "Decorator/D_RepeatUntilFail.h"
 
 // Example Leaf Nodes
 #include "Leaf/L_CheckMouseClick.h"
