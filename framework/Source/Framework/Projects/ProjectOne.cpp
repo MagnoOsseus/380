@@ -14,8 +14,6 @@ written consent of DigiPen Institute of Technology is prohibited.
 #include <pch.h>
 #include "ProjectOne.h"
 #include "../Student/Project_1/FarmSimState.h"
-#include <iomanip>
-#include <sstream>
 
 
 bool ProjectOne::initialize()
@@ -112,10 +110,7 @@ void ProjectOne::build_ui()
 
 const std::wstring &ProjectOne::get_day_cycle_text()
 {
-    std::wstringstream stream;
-    stream << (FarmSim::is_nighttime() ? L"Noche" : L"Dia")
-        << L" (" << std::fixed << std::setprecision(1) << FarmSim::hour_of_day() << L"h)";
-    dayCycleText = stream.str();
+    dayCycleText = FarmSim::is_nighttime() ? L"Noche" : L"Dia";
     return dayCycleText;
 }
 

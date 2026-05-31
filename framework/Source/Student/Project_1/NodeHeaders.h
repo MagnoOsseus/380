@@ -63,3 +63,7 @@
 #include "Leaf/L_GoToSleepArea.h"
 #include "Leaf/L_GoToWaitForFood.h"
 #include "Leaf/L_WaitForFood.h"
+#include "Leaf/L_IsNightMature.h"
+#include "Leaf/L_IsThirsty.h"
+#include "Leaf/L_GoToWater.h"
+#include "Leaf/L_DrinkWater.h"

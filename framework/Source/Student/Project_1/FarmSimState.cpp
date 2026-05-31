@@ -344,4 +344,49 @@ namespace FarmSim
     {
         return g_state.feedingArea;
     }
+
+    Vec3 get_water_trough()
+    {
+        return g_state.waterTroughArea;
+    }
+
+    double hours_into_night()
+    {
+        if (is_nighttime() == false)
+        {
+            return 0.0;
+        }
+
+        const double h = hour_of_day();
+
+        if (h >= NightStartHour)
+        {
+            return h - NightStartHour;
+        }
+
+        // Night wrapped past midnight
+        return (24.0 - NightStartHour) + h;
+    }
+
+    bool is_night_mature(double hoursDelay)
+    {
+        return is_nighttime() && hours_into_night() >= hoursDelay;
+    }
+
+    bool is_thirsty(size_t agentId, double thirstIntervalSeconds)
+    {
+        const auto it = g_state.lastDrinkTimes.find(agentId);
+
+        if (it == g_state.lastDrinkTimes.end())
+        {
+            return true;
+        }
+
+        return (now() - it->second) >= thirstIntervalSeconds;
+    }
+
+    void mark_drank(size_t agentId)
+    {
+        g_state.lastDrinkTimes[agentId] = now();
+    }
 }
