@@ -14,7 +14,7 @@ void L_WaitForFood::on_enter()
 
 void L_WaitForFood::on_update(float dt)
 {
-	// If panic starts while waiting, abort so the panic branch can run.
+	// Leave if panic or night arrives
 	if (FarmSim::panic_active() == true)
 	{
 		on_failure();
@@ -22,7 +22,6 @@ void L_WaitForFood::on_update(float dt)
 		return;
 	}
 
-	// If it becomes nighttime, stop waiting and go to sleep instead.
 	if (FarmSim::is_nighttime() == true)
 	{
 		on_failure();
@@ -32,7 +31,7 @@ void L_WaitForFood::on_update(float dt)
 
 	waitTimer -= dt;
 
-	// Check if we've been fed (mark_ate clears hunger state).
+	// Succeed once the farmer has fed us
 	if (FarmSim::is_hungry(agent->get_id()) == false)
 	{
 		on_success();

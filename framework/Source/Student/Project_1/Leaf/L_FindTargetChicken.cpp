@@ -4,7 +4,7 @@
 
 void L_FindTargetChicken::on_update(float)
 {
-    // Never acquire new prey while alert is active (wolf should be fleeing/hiding).
+    // Don't pick new prey while the wolf is already fleeing an alert
     if (FarmSim::wolf_alert_active() == true)
     {
         FarmSim::clear_wolf_target(agent->get_id());

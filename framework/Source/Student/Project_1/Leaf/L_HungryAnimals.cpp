@@ -4,10 +4,10 @@
 
 void L_HungryAnimals::on_update(float)
 {
-    // Only proceed if animals are hungry AND it's not nighttime or lunchtime.
     const double hourOfDay = FarmSim::hour_of_day();
     const bool isNighttime = FarmSim::is_nighttime();
     const bool isLunchtime = (hourOfDay >= 12.0 && hourOfDay < 13.0);
+    // Don't feed at night or during the farmer's lunch hour
     const bool shouldFeed = (!isNighttime && !isLunchtime);
     const bool anyHungry = FarmSim::any_animal_hungry();
 

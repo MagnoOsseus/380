@@ -1,9 +1,7 @@
 #pragma once
 #include "D_Cooldown.h"
 
-// Cooldown decorator tuned for fight decisions:
-//   10 seconds after deciding to fight, 3 seconds between failed checks.
-// Replaces the static cooldown map that was embedded in L_WantsToFight.
+// Cooldown for fight decisions: 10s after success, 3s after failure
 class D_CooldownFight : public D_Cooldown
 {
 public:

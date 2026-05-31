@@ -4,8 +4,7 @@
 
 void L_IsNightMature::on_update(float)
 {
-    // Succeeds only once night has been active for at least 1 simulated hour
-    // (equivalent to ~5 real seconds), so the wolf waits a bit before hunting.
+    // Wait ~1 sim-hour into the night before succeeding (so the wolf doesn't hunt immediately)
     if (FarmSim::is_night_mature(1.0))
     {
         on_success();

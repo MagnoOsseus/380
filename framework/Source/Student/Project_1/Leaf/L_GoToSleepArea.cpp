@@ -8,14 +8,13 @@ L_GoToSleepArea::L_GoToSleepArea() : arrivalRadius(3.0f)
 
 void L_GoToSleepArea::on_enter()
 {
-	// Determine sleep area based on agent type
+	// Wolf goes to the den; chickens/roosters go to the roost
 	if (agent->get_type() == "Wolf")
 	{
 		targetSleepArea = FarmSim::get_wolf_den();
 	}
 	else
 	{
-		// Chickens and Rooster go to the roost area
 		targetSleepArea = FarmSim::get_chicken_roost();
 	}
 
@@ -24,7 +23,7 @@ void L_GoToSleepArea::on_enter()
 
 void L_GoToSleepArea::on_update(float dt)
 {
-	// If panic starts while heading to the roost, abort so the panic branch can run.
+	// Abort if panic or wolf alert fires mid-travel
 	if (FarmSim::panic_active() == true || FarmSim::wolf_alert_active() == true)
 	{
 		on_failure();
@@ -35,7 +34,6 @@ void L_GoToSleepArea::on_update(float dt)
 	const auto delta = agent->get_position() - targetSleepArea;
 	const float distSq = delta.LengthSquared();
 
-	// If we've arrived at the sleep area, stop and return success
 	if (distSq <= (arrivalRadius * arrivalRadius))
 	{
 		on_success();

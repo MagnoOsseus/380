@@ -4,7 +4,7 @@
 
 void L_RunCrazy::on_update(float dt)
 {
-    // When panic ends, succeed so the sequencer can continue to the next node.
+    // Panic ended — clean up and succeed
     if (FarmSim::panic_active() == false)
     {
         FarmSim::state().wanderTargets.erase(agent->get_id());
@@ -16,6 +16,7 @@ void L_RunCrazy::on_update(float dt)
     auto &state = FarmSim::state();
     const size_t id = agent->get_id();
 
+    // Pick a new random target if we don't have one
     auto result = state.wanderTargets.find(id);
     if (result == state.wanderTargets.end())
     {
@@ -26,7 +27,6 @@ void L_RunCrazy::on_update(float dt)
 
     if (reached == true)
     {
-        // Pick a new random point and keep running while panic is still active.
         state.wanderTargets[id] = FarmSim::random_point_near(agent->get_position(), 12.0f);
     }
 

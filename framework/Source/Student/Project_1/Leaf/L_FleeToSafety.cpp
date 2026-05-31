@@ -9,7 +9,7 @@ void L_FleeToSafety::on_update(float dt)
 
     if (reached == true)
     {
-        // Wolf hid successfully -> farmer stops chasing, but chickens keep panicking for their full window.
+        // Clear alert once the wolf reaches safety
         FarmSim::clear_wolf_alert_only();
         FarmSim::clear_wolf_target(agent->get_id());
         on_success();

@@ -6,8 +6,7 @@ void D_DaytimeOnly::on_update(float dt)
 {
     BehaviorNode *child = children.front();
 
-    // Only gate entry: if the child has not started yet and it is nighttime,
-    // fail immediately without running the child.
+    // Block entry if night and child hasn't started yet
     if (child->is_ready() && FarmSim::is_nighttime())
     {
         on_failure();
@@ -24,12 +23,10 @@ void D_DaytimeOnly::on_update(float dt)
     {
         on_failure();
     }
-    // if child is still running, stay RUNNING and wait
 }
 
 void D_DaytimeOnly::on_exit()
 {
-    // Reset to READY so the parent can re-evaluate this guard on the next
-    // activation, mirroring the loop behaviour of D_InvertedRepeater.
+    // Reset so the parent can re-check this guard next time
     set_status(NodeStatus::READY);
 }
