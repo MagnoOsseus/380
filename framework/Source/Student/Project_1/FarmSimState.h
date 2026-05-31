@@ -18,10 +18,12 @@ struct FarmSimState
     std::unordered_map<size_t, int> lastCrowDay;
     std::unordered_map<size_t, size_t> wolfTargetChickenByWolf;
     std::unordered_map<size_t, int> lastChopDay;
+    std::unordered_map<size_t, double> lastDrinkTimes;
 
     Vec3 chickenRoostArea = Vec3(73.0f, 0.0f, 50.0f);
     Vec3 wolfDenArea = Vec3(10.0f, 0.0f, 10.0f);
     Vec3 feedingArea = Vec3(73.0f, 0.0f, 42.0f);
+    Vec3 waterTroughArea = Vec3(68.0f, 0.0f, 52.0f);
 };
 
 namespace FarmSim
@@ -78,4 +80,11 @@ namespace FarmSim
     Vec3 get_chicken_roost();
     Vec3 get_wolf_den();
     Vec3 get_feeding_area();
+    Vec3 get_water_trough();
+
+    double hours_into_night();
+    bool is_night_mature(double hoursDelay = 1.0);
+
+    bool is_thirsty(size_t agentId, double thirstIntervalSeconds = 25.0);
+    void mark_drank(size_t agentId);
 }
