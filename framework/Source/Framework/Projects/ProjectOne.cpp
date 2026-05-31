@@ -107,7 +107,7 @@ void ProjectOne::build_ui()
     ui->create_value_text_field(UIAnchor::TOP_LEFT, 90, 32, L"FPS:", fpsGetter);
 
     TextGetter dayCycleGetter = std::bind(&ProjectOne::get_day_cycle_text, this);
-    ui->create_value_text_field(UIAnchor::TOP_LEFT, 90, 64, L"Momento:", dayCycleGetter);
+    ui->create_value_text_field(UIAnchor::TOP_LEFT, 10, 64, L"Momento:", dayCycleGetter);
 }
 
 std::wstring ProjectOne::get_day_cycle_text()
