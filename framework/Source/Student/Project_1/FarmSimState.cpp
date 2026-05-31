@@ -19,11 +19,6 @@ namespace FarmSim
         return g_state;
     }
 
-    double now_seconds()
-    {
-        return now();
-    }
-
     double hour_of_day()
     {
         const double cycle = fmod(now(), DayCycleSeconds);
@@ -171,11 +166,6 @@ namespace FarmSim
         }
 
         return dynamic_cast<BehaviorAgent *>(farmers.front());
-    }
-
-    bool has_live_chickens()
-    {
-        return (agents->get_all_agents_by_type("Chicken").empty() == false);
     }
 
     bool is_near(const BehaviorAgent *a, const BehaviorAgent *b, float radius)
