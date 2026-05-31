@@ -73,11 +73,7 @@ void enemy_field_of_view(MapLayer<float> &layer, float fovAngle, float closeDist
 
 bool enemy_find_player(MapLayer<float> &layer, AStarAgent *enemy, Agent *player)
 {
-    /*
-        Check if the player's current tile has a negative value, ie in the fov cone
-        or within a detection radius.
-    */
-
+    // Comprueba si el jugador está dentro de la zona detectada.
     const auto &playerWorldPos = player->get_position();
 
     const auto playerGridPos = terrain->get_grid_position(playerWorldPos);
