@@ -1,6 +1,7 @@
 #include <pch.h>
 #include "C_ParallelSequencer.h"
 
+// Ejecuta todos los hijos y termina cuando todos aciertan o uno falla.
 void C_ParallelSequencer::on_update(float dt)
 {
     bool allSuccess = true;
