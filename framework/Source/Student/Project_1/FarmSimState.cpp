@@ -4,10 +4,12 @@
 
 namespace
 {
+    // Estado global compartido por los nodos del proyecto.
     FarmSimState g_state;
 
     double now()
     {
+        // Tiempo total de simulación en segundos.
         return engine->get_timer().GetTotalSeconds();
     }
 }
@@ -34,6 +36,7 @@ namespace FarmSim
             return (h >= NightStartHour && h < NightEndHour);
         }
 
+        // Este caso cubre noches que cruzan medianoche.
         return (h >= NightStartHour || h < NightEndHour);
     }
 
@@ -112,6 +115,7 @@ namespace FarmSim
         BehaviorAgent *best = nullptr;
         float bestDistSq = FLT_MAX;
 
+        // Busca el agente válido más cercano sin usar raíz cuadrada.
         for (auto *base : list)
         {
             auto *candidate = dynamic_cast<BehaviorAgent *>(base);
@@ -222,6 +226,7 @@ namespace FarmSim
 
         if (result == g_state.nextEggTimes.end())
         {
+            // La primera llamada programa la siguiente puesta.
             g_state.nextEggTimes[agentId] = now() + RNG::range(25.0f, 55.0f);
             return false;
         }
@@ -246,6 +251,7 @@ namespace FarmSim
 
         if (result == g_state.lastCrowDay.end())
         {
+            // Si no hay registro, puede cantar hoy.
             return true;
         }
 
@@ -349,6 +355,7 @@ namespace FarmSim
             return h - NightStartHour;
         }
 
+        // Sigue contando después de medianoche.
         return (24.0 - NightStartHour) + h;
     }
 
