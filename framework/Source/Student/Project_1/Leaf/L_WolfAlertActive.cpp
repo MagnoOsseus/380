@@ -1,8 +1,17 @@
 #include <pch.h>
 #include "L_WolfAlertActive.h"
+#include "../FarmSimState.h"
 
 void L_WolfAlertActive::on_update(float)
 {
-    on_success();
+    if (FarmSim::wolf_alert_active())
+    {
+        on_success();
+    }
+    else
+    {
+        on_failure();
+    }
+
     display_leaf_text();
 }
