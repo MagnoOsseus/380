@@ -4,8 +4,11 @@
 
 void L_TriggerPanicEvent::on_update(float)
 {
-    // Stronger panic window to ensure sleeping actors wake and run for a visible period.
-    FarmSim::trigger_panic(30.0, 30.0);
+    // Avoid constantly extending panic when multiple events happen in a row.
+    if (FarmSim::panic_active() == false)
+    {
+        FarmSim::trigger_panic(12.0, 14.0);
+    }
     on_success();
     display_leaf_text();
 }

@@ -6,7 +6,7 @@
 void L_CutDown::on_enter()
 {
     targetPoint = Vec3(24.0f, 0.0f, 75.0f);
-    chopTimer = 10.0f;
+    chopTimer = 18.0f;
     BehaviorNode::on_leaf_enter();
 }
 
