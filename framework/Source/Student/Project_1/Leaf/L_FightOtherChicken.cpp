@@ -13,7 +13,14 @@ void L_FightOtherChicken::on_update(float dt)
         return;
     }
 
+    // Succeed only when close enough to the other chicken (within fighting range).
+    if (FarmSim::is_near(agent, other, 2.0f) == true)
+    {
+        on_success();
+        display_leaf_text();
+        return;
+    }
+
     agent->move_toward_point(other->get_position(), dt);
-    on_success();
     display_leaf_text();
 }
