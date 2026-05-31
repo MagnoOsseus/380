@@ -8,24 +8,30 @@ L_WaitForFood::L_WaitForFood() : waitTimer(0.0f)
 
 void L_WaitForFood::on_enter()
 {
-	waitTimer = 0.5f;  // Check every 0.5 seconds if food arrived
+	waitTimer = 0.5f;
 	BehaviorNode::on_leaf_enter();
 }
 
 void L_WaitForFood::on_update(float dt)
 {
+	// If it becomes nighttime, stop waiting and go to sleep instead.
+	if (FarmSim::is_nighttime() == true)
+	{
+		on_failure();
+		display_leaf_text();
+		return;
+	}
+
 	waitTimer -= dt;
 
-	// Check if we've been fed (mark_ate clears hunger state)
+	// Check if we've been fed (mark_ate clears hunger state).
 	if (FarmSim::is_hungry(agent->get_id()) == false)
 	{
-		// We've been fed! Success.
 		on_success();
 		display_leaf_text();
 		return;
 	}
 
-	// Still waiting... keep waiting
 	if (waitTimer <= 0.0f)
 	{
 		waitTimer = 0.5f;

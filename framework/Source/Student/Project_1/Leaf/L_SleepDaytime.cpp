@@ -2,9 +2,19 @@
 #include "L_SleepDaytime.h"
 #include "../FarmSimState.h"
 
-void L_SleepDaytime::on_update(float)
+L_SleepDaytime::L_SleepDaytime() : sleepTimer(0.0f)
 {
-    // Day-sleep should be interruptible by panic/alert and by night transition.
+}
+
+void L_SleepDaytime::on_enter()
+{
+    sleepTimer = RNG::range(6.0f, 12.0f);
+    BehaviorNode::on_leaf_enter();
+}
+
+void L_SleepDaytime::on_update(float dt)
+{
+    // Interrupt sleep if panic/alert occurs or night falls.
     if (FarmSim::panic_active() == true || FarmSim::wolf_alert_active() == true || FarmSim::is_daytime() == false)
     {
         on_failure();
@@ -12,8 +22,8 @@ void L_SleepDaytime::on_update(float)
         return;
     }
 
-    // Keep sleeping as a running state most ticks, occasionally succeed so tree can re-evaluate alternatives.
-    if (RNG::range(0, 100) < 8)
+    sleepTimer -= dt;
+    if (sleepTimer <= 0.0f)
     {
         on_success();
     }
