@@ -52,12 +52,9 @@ namespace FarmSim
         g_state.panicActive = true;
         g_state.wolfAlert = true;
 
-        // Refresh both windows from "now" every time panic triggers so all chickens
-        // immediately switch to flee behavior and keep fleeing for the full duration.
         g_state.panicUntil = now() + panicDuration;
         g_state.wolfAlertUntil = now() + alertDuration;
 
-        // Force wolf to drop any stale target so it doesn't continue chain-eating.
         g_state.wolfTargetChickenByWolf.clear();
     }
 
@@ -71,8 +68,6 @@ namespace FarmSim
 
     void clear_wolf_alert_only()
     {
-        // Only stop the wolf-alert so the farmer stops chasing.
-        // The chicken panic is allowed to continue for its full duration.
         g_state.wolfAlert = false;
         g_state.wolfAlertUntil = 0.0;
     }
@@ -354,7 +349,6 @@ namespace FarmSim
             return h - NightStartHour;
         }
 
-        // Night wrapped past midnight
         return (24.0 - NightStartHour) + h;
     }
 

@@ -4,10 +4,7 @@
 
 void L_MoveToRandomPosition::on_enter()
 {
-    // set animation, speed, etc
-
     targetPoint = RNG::world_position();
-    //agent->look_at_point(targetPoint);
 
 	BehaviorNode::on_leaf_enter();
 }

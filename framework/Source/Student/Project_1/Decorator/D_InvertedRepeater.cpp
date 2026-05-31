@@ -20,7 +20,5 @@ void D_InvertedRepeater::on_update(float dt)
 
 void D_InvertedRepeater::on_exit()
 {
-    // we want the node and child to repeat, so go back to ready
     set_status(NodeStatus::READY);
 }
-

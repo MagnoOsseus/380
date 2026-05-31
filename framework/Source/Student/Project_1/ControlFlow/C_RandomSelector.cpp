@@ -13,8 +13,6 @@ void C_RandomSelector::on_enter()
 
 void C_RandomSelector::on_update(float dt)
 {
-    // if any child succeeds, the node succeeds
-    // if all children fail, the node fails
     BehaviorNode *currentNode = children[randomIndex];
     currentNode->tick(dt);
 
@@ -24,15 +22,12 @@ void C_RandomSelector::on_update(float dt)
     }
     else if (currentNode->failed() == true)
     {
-        // first check if every child has failed
         if (check_for_all_failed() == true)
         {
-            // the node has failed
             on_failure();
         }
         else
         {
-            // choose the next node to try
             choose_random_node();
         }
     }
@@ -40,7 +35,6 @@ void C_RandomSelector::on_update(float dt)
 
 void C_RandomSelector::choose_random_node()
 {
-    // choose a random node that hasn't succeeded or failed
     while (true)
     {
         randomIndex = RNG::range(static_cast<size_t>(0), children.size() - 1);

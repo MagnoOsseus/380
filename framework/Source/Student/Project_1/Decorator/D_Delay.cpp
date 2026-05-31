@@ -21,7 +21,6 @@ void D_Delay::on_update(float dt)
 
         child->tick(dt);
 
-        // assume same status as child
         set_status(child->get_status());
         set_result(child->get_result());
     }

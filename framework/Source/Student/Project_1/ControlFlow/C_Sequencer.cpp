@@ -12,8 +12,6 @@ void C_Sequencer::on_enter()
 
 void C_Sequencer::on_update(float dt)
 {
-    // if any child fails, the node fails
-    // if all children succeed, the node succeeds
     BehaviorNode *currentNode = children[currentIndex];
     currentNode->tick(dt);
 
@@ -23,10 +21,8 @@ void C_Sequencer::on_update(float dt)
     }
     else if (currentNode->succeeded() == true)
     {
-        // move to the next node
         ++currentIndex;
 
-        // if we hit the size, then all nodes suceeded
         if (currentIndex == children.size())
         {
             on_success();

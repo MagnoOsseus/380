@@ -3,10 +3,6 @@
 
 void C_ParallelSequencer::on_update(float dt)
 {
-    // run all children
-    // if any child fails, the node fails
-    // if all children succeed, the node succeeds
-
     bool allSuccess = true;
 
     for (auto && child : children)
