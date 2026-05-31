@@ -325,6 +325,9 @@
     <ClInclude Include="Source\Student\Project_1\Leaf\L_CutDown.h">
       <Filter>Source\Student\Project_1\Leaf</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Student\Project_1\Leaf\L_DrinkWater.h">
+      <Filter>Source\Student\Project_1\Leaf</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Student\Project_1\Leaf\L_EatChicken.h">
       <Filter>Source\Student\Project_1\Leaf</Filter>
     </ClInclude>
@@ -355,6 +358,9 @@
     <ClInclude Include="Source\Student\Project_1\Leaf\L_GoToWaitForFood.h">
       <Filter>Source\Student\Project_1\Leaf</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Student\Project_1\Leaf\L_GoToWater.h">
+      <Filter>Source\Student\Project_1\Leaf</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Student\Project_1\Leaf\L_HungryAnimals.h">
       <Filter>Source\Student\Project_1\Leaf</Filter>
     </ClInclude>
@@ -367,7 +373,13 @@
     <ClInclude Include="Source\Student\Project_1\Leaf\L_IsNighttime.h">
       <Filter>Source\Student\Project_1\Leaf</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Student\Project_1\Leaf\L_IsNightMature.h">
+      <Filter>Source\Student\Project_1\Leaf</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Student\Project_1\Leaf\L_IsPanicking.h">
+      <Filter>Source\Student\Project_1\Leaf</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Student\Project_1\Leaf\L_IsThirsty.h">
       <Filter>Source\Student\Project_1\Leaf</Filter>
     </ClInclude>
     <ClInclude Include="Source\Student\Project_1\Leaf\L_JustBecameDay.h">
@@ -693,6 +705,9 @@
     <ClCompile Include="Source\Student\Project_1\Leaf\L_GoToWaitForFood.cpp">
       <Filter>Source\Student\Project_1\Leaf</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Student\Project_1\Leaf\L_GoToWater.cpp">
+      <Filter>Source\Student\Project_1\Leaf</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Student\Project_1\Leaf\L_HungryAnimals.cpp">
       <Filter>Source\Student\Project_1\Leaf</Filter>
     </ClCompile>
@@ -705,7 +720,13 @@
     <ClCompile Include="Source\Student\Project_1\Leaf\L_IsNighttime.cpp">
       <Filter>Source\Student\Project_1\Leaf</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Student\Project_1\Leaf\L_IsNightMature.cpp">
+      <Filter>Source\Student\Project_1\Leaf</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Student\Project_1\Leaf\L_IsPanicking.cpp">
+      <Filter>Source\Student\Project_1\Leaf</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Student\Project_1\Leaf\L_IsThirsty.cpp">
       <Filter>Source\Student\Project_1\Leaf</Filter>
     </ClCompile>
     <ClCompile Include="Source\Student\Project_1\Leaf\L_JustBecameDay.cpp">
@@ -715,6 +736,9 @@
       <Filter>Source\Student\Project_1\Leaf</Filter>
     </ClCompile>
     <ClCompile Include="Source\Student\Project_1\Leaf\L_Lunchtime.cpp">
+      <Filter>Source\Student\Project_1\Leaf</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Student\Project_1\Leaf\L_DrinkWater.cpp">
       <Filter>Source\Student\Project_1\Leaf</Filter>
     </ClCompile>
     <ClCompile Include="Source\Student\Project_1\Leaf\L_MakePanicNoise.cpp">
