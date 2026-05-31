@@ -1,6 +1,7 @@
 #include <pch.h>
 #include "D_InvertedRepeater.h"
 
+// Invierte éxito y fallo del hijo.
 void D_InvertedRepeater::on_update(float dt)
 {
     BehaviorNode *child = children.front();
@@ -18,6 +19,7 @@ void D_InvertedRepeater::on_update(float dt)
 
 }
 
+// Deja el decorador listo para repetirse.
 void D_InvertedRepeater::on_exit()
 {
     set_status(NodeStatus::READY);

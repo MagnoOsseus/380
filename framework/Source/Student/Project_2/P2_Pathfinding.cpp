@@ -21,21 +21,18 @@ bool ProjectTwo::implemented_jps_plus()
 
 bool AStarPather::initialize()
 {
-    // Inicializa datos persistentes del pathfinder.
-    // Si se precalcula el mapa, aquí conviene registrar el cambio de mapa.
+    // Inicializa estado del pathfinder.
     return true; // return false if any errors actually occur, to stop engine initialization
 }
 
 void AStarPather::shutdown()
 {
-    // Libera memoria o estado global del pathfinder.
+    // Libera recursos del pathfinder.
 }
 
 PathResult AStarPather::compute_path(PathRequest &request)
 {
-    // Resuelve una petición de camino y rellena request.path.
-    // singleStep, smoothing y debugColoring se controlan desde request.
-    // Este bloque actual es solo código de ejemplo.
+    // Genera un camino simple entre inicio y meta.
     GridPos start = terrain->get_grid_position(request.start);
     GridPos goal = terrain->get_grid_position(request.goal);
     terrain->set_color(start, Colors::Orange);

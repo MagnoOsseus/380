@@ -2,6 +2,7 @@
 #include "L_MoveToFurthestAgent.h"
 #include "Agent/BehaviorAgent.h"
 
+// Busca el agente más lejano y lo fija como objetivo.
 void L_MoveToFurthestAgent::on_enter()
 {
     float longestDistance = std::numeric_limits<float>().min();
@@ -39,6 +40,7 @@ void L_MoveToFurthestAgent::on_enter()
     }
 }
 
+// Avanza hacia el objetivo y finaliza al llegar.
 void L_MoveToFurthestAgent::on_update(float dt)
 {
     const auto result = agent->move_toward_point(targetPoint, dt);

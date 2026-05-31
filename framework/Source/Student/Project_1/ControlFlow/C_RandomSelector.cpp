@@ -1,9 +1,11 @@
 #include <pch.h>
 #include "C_RandomSelector.h"
 
+// Inicializa sin hijo activo.
 C_RandomSelector::C_RandomSelector() : randomIndex(-1)
 {}
 
+// Reinicia el nodo y elige un hijo listo al azar.
 void C_RandomSelector::on_enter()
 {
     BehaviorNode::on_enter();
@@ -11,6 +13,7 @@ void C_RandomSelector::on_enter()
     choose_random_node();
 }
 
+// Ejecuta un hijo aleatorio y cambia si falla.
 void C_RandomSelector::on_update(float dt)
 {
     BehaviorNode *currentNode = children[randomIndex];
@@ -33,6 +36,7 @@ void C_RandomSelector::on_update(float dt)
     }
 }
 
+// Selecciona un hijo listo de forma aleatoria.
 void C_RandomSelector::choose_random_node()
 {
     while (true)
@@ -48,6 +52,7 @@ void C_RandomSelector::choose_random_node()
     }
 }
 
+// Verifica si ya fallaron todos los hijos.
 bool C_RandomSelector::check_for_all_failed() const
 {
     bool result = true;

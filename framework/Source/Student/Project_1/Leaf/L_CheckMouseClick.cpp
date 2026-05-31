@@ -2,6 +2,7 @@
 #include "L_CheckMouseClick.h"
 #include "../Agent/BehaviorAgent.h"
 
+// Guarda la posición del clic izquierdo en el blackboard.
 void L_CheckMouseClick::on_update(float dt)
 {
     const auto leftMouseState = InputHandler::get_current_state(MouseButtons::LEFT);

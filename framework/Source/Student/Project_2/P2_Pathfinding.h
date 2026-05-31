@@ -4,10 +4,10 @@
 class AStarPather
 {
 public:
-    // Punto de entrada del pathfinding A* del alumno.
+    // Interfaz principal del pathfinder A*.
     // DO NOT MODIFY THESE SIGNATURES
     bool initialize();
     void shutdown();
     PathResult compute_path(PathRequest &request);
-    // Aquí se pueden añadir helpers y datos internos.
+    // Añade aquí helpers y datos internos si hace falta.
 };
