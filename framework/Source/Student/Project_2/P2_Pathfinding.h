@@ -2,6 +2,7 @@
 #include "Misc/PathfindingDetails.hpp"
 #include <array>
 #include <cstdint>
+#include <limits>
 
 class AStarPather
 {
@@ -23,7 +24,8 @@ private:
     static constexpr int MAX_MAP_WIDTH = 40;
     static constexpr int MAX_MAP_HEIGHT = 40;
     static constexpr int MAX_NODE_COUNT = MAX_MAP_WIDTH * MAX_MAP_HEIGHT;
-    static constexpr std::uint16_t INVALID_NODE = 0xFFFFu;
+    static constexpr std::uint16_t INVALID_NODE = std::numeric_limits<std::uint16_t>::max();
+    static constexpr unsigned INVALID_MAP_INDEX = std::numeric_limits<unsigned>::max();
 
     enum class NodeState : std::uint8_t
     {
@@ -38,7 +40,7 @@ private:
         float f;
         std::uint16_t parent;
         std::int16_t heapIndex;
-        std::uint8_t neighborMask;
+        bool neighbors[8];
         NodeState state;
     };
 
@@ -65,7 +67,7 @@ private:
     std::array<float, MAX_NODE_COUNT> octileTable_{};
 
     SearchState search_{};
-    unsigned cachedMapIndex_{ static_cast<unsigned>(-1) };
+    unsigned cachedMapIndex_{ INVALID_MAP_INDEX };
     int mapWidth_{ 0 };
     int mapHeight_{ 0 };
     float cellWidth_{ 0.0f };

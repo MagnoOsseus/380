@@ -93,7 +93,7 @@ void AStarPather::shutdown()
 {
     reset_search_state();
     mapReady_ = false;
-    cachedMapIndex_ = static_cast<unsigned>(-1);
+    cachedMapIndex_ = INVALID_MAP_INDEX;
 }
 
 void AStarPather::initialize_lookup_tables()
@@ -137,7 +137,7 @@ void AStarPather::preprocess_current_map()
         node.f = 0.0f;
         node.parent = INVALID_NODE;
         node.heapIndex = -1;
-        node.neighborMask = 0;
+        for (bool &neighbor : node.neighbors) { neighbor = false; }
         node.state = NodeState::UNVISITED;
     }
 
@@ -155,7 +155,7 @@ void AStarPather::preprocess_current_map()
                 continue;
             }
 
-            std::uint8_t mask = 0;
+            Node &node = nodes_[to_index(row, col)];
 
             for (int dir = 0; dir < DIRECTION_COUNT; ++dir)
             {
@@ -164,6 +164,7 @@ void AStarPather::preprocess_current_map()
 
                 if (is_blocked(nextRow, nextCol) == true)
                 {
+                    node.neighbors[dir] = false;
                     continue;
                 }
 
@@ -172,14 +173,13 @@ void AStarPather::preprocess_current_map()
                     if (is_blocked(row + DIR_ROW[dir], col) == true ||
                         is_blocked(row, col + DIR_COL[dir]) == true)
                     {
+                        node.neighbors[dir] = false;
                         continue;
                     }
                 }
 
-                mask |= static_cast<std::uint8_t>(1u << dir);
+                node.neighbors[dir] = true;
             }
-
-            nodes_[to_index(row, col)].neighborMask = mask;
         }
     }
 }
@@ -188,7 +188,7 @@ void AStarPather::on_map_change()
 {
     reset_search_state();
     mapReady_ = false;
-    cachedMapIndex_ = static_cast<unsigned>(-1);
+    cachedMapIndex_ = INVALID_MAP_INDEX;
 }
 
 std::uint16_t AStarPather::to_index(int row, int col) const
@@ -227,7 +227,7 @@ float AStarPather::heuristic_cost(std::uint16_t index, std::uint16_t goalIndex, 
     case Heuristic::EUCLIDEAN:
         return euclideanTable_[tableIndex];
     case Heuristic::INCONSISTENT:
-        return ((from.row + from.col) & 1) == 0 ? octileTable_[tableIndex] : octileTable_[tableIndex] * 0.5f;
+        return ((from.row + from.col) % 2 == 0) ? octileTable_[tableIndex] : octileTable_[tableIndex] * 0.5f;
     case Heuristic::OCTILE:
     default:
         return octileTable_[tableIndex];
@@ -286,7 +286,7 @@ void AStarPather::heap_sift_up(std::uint16_t heapSlot)
 {
     while (heapSlot > 0)
     {
-        const std::uint16_t parentSlot = static_cast<std::uint16_t>((heapSlot - 1) >> 1);
+        const std::uint16_t parentSlot = static_cast<std::uint16_t>((heapSlot - 1) / 2);
 
         if (open_less(openHeap_[heapSlot], openHeap_[parentSlot]) == false)
         {
@@ -668,11 +668,10 @@ PathResult AStarPather::step_search(PathRequest &request)
     }
 
     const GridPos currentGrid = to_grid(currentIndex);
-    const std::uint8_t neighborMask = currentNode.neighborMask;
 
     for (int dir = 0; dir < DIRECTION_COUNT; ++dir)
     {
-        if ((neighborMask & static_cast<std::uint8_t>(1u << dir)) == 0)
+        if (currentNode.neighbors[dir] == false)
         {
             continue;
         }
