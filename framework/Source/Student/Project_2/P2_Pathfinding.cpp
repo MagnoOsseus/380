@@ -137,8 +137,7 @@ void AStarPather::preprocess_current_map()
         node.f = 0.0f;
         node.parent = INVALID_NODE;
         node.heapIndex = -1;
-        for (bool &neighbor : node.neighbors) { neighbor = false; }
-        node.state = NodeState::UNVISITED;
+        node.neighbors = {};        node.state = NodeState::UNVISITED;
     }
 
     if (mapReady_ == false)
