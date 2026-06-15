@@ -24,6 +24,7 @@ bool ProjectTwo::implemented_jps_plus()
 
 namespace
 {
+    // local limits
     constexpr int LOCAL_MAX_MAP_WIDTH = 40;
     constexpr int LOCAL_MAX_NODE_COUNT = LOCAL_MAX_MAP_WIDTH * LOCAL_MAX_MAP_WIDTH;
     constexpr int LOCAL_MAX_POINT_COUNT = LOCAL_MAX_NODE_COUNT * 4;
@@ -31,6 +32,7 @@ namespace
     constexpr float DIAGONAL_COST = 1.41421356237f;
     constexpr float EPSILON = 0.0001f;
     constexpr int DIRECTION_COUNT = 8;
+    // direction offsets
     constexpr int DIR_ROW[DIRECTION_COUNT] = { -1, 1, 0, 0, -1, -1, 1, 1 };
     constexpr int DIR_COL[DIRECTION_COUNT] = { 0, 0, -1, 1, -1, 1, -1, 1 };
     constexpr float DIR_COST[DIRECTION_COUNT] =
@@ -39,11 +41,13 @@ namespace
         DIAGONAL_COST, DIAGONAL_COST, DIAGONAL_COST, DIAGONAL_COST
     };
 
+    // Maps a delta pair into a single table index.
     int heuristic_lookup_index(int dx, int dy)
     {
         return dx * LOCAL_MAX_MAP_WIDTH + dy;
     }
 
+    // Evaluates one Catmull-Rom point between path samples.
     Vec3 catmull_rom(const Vec3 &p0, const Vec3 &p1, const Vec3 &p2, const Vec3 &p3, float t)
     {
         const float t2 = t * t;
@@ -58,6 +62,7 @@ namespace
         return result * 0.5f;
     }
 
+    // Inserts evenly spaced points along one segment.
     void append_even_points(const Vec3 &start, const Vec3 &end, float maxSpacing,
         std::array<Vec3, LOCAL_MAX_POINT_COUNT> &outPoints, int &outCount)
     {
@@ -80,9 +85,11 @@ namespace
 
 bool AStarPather::initialize()
 {
+    // set up tables and state
     initialize_lookup_tables();
     reset_search_state();
 
+    // listen for map changes
     Callback mapCallback = std::bind(&AStarPather::on_map_change, this);
     Messenger::listen_for_message(Messages::MAP_CHANGE, mapCallback);
 
@@ -91,6 +98,7 @@ bool AStarPather::initialize()
 
 void AStarPather::shutdown()
 {
+    // Clears runtime state when the pather shuts down.
     reset_search_state();
     mapReady_ = false;
     cachedMapIndex_ = INVALID_MAP_INDEX;
@@ -98,11 +106,13 @@ void AStarPather::shutdown()
 
 void AStarPather::initialize_lookup_tables()
 {
+    // Avoids rebuilding the same lookup tables more than once.
     if (lookupReady_ == true)
     {
         return;
     }
 
+    // Makes heuristic lookups constant time during search.
     for (int dx = 0; dx < MAX_MAP_WIDTH; ++dx)
     {
         for (int dy = 0; dy < MAX_MAP_HEIGHT; ++dy)
@@ -125,19 +135,25 @@ void AStarPather::initialize_lookup_tables()
 
 void AStarPather::preprocess_current_map()
 {
+    // store map data
     mapWidth_ = terrain->get_map_width();
     mapHeight_ = terrain->get_map_height();
     cellWidth_ = Terrain::mapSizeInWorld / static_cast<float>(std::max(mapWidth_, 1));
     cachedMapIndex_ = terrain->get_map_index();
     mapReady_ = (mapWidth_ > 0 && mapHeight_ > 0);
 
+    // clear nodes
     for (auto &node : nodes_)
     {
         node.g = 0.0f;
         node.f = 0.0f;
         node.parent = INVALID_NODE;
         node.heapIndex = -1;
-        node.neighbors = {};        node.state = NodeState::UNVISITED;
+        for (bool &neighbor : node.neighbors)
+        {
+            neighbor = false;
+        }
+        node.state = NodeState::UNVISITED;
     }
 
     if (mapReady_ == false)
@@ -145,6 +161,7 @@ void AStarPather::preprocess_current_map()
         return;
     }
 
+    // precompute valid neighbors
     for (int row = 0; row < mapHeight_; ++row)
     {
         for (int col = 0; col < mapWidth_; ++col)
@@ -167,6 +184,7 @@ void AStarPather::preprocess_current_map()
                     continue;
                 }
 
+                // avoid corner cutting
                 if (dir >= 4)
                 {
                     if (is_blocked(row + DIR_ROW[dir], col) == true ||
@@ -185,6 +203,7 @@ void AStarPather::preprocess_current_map()
 
 void AStarPather::on_map_change()
 {
+    // Forces the graph cache to be rebuilt on the next request.
     reset_search_state();
     mapReady_ = false;
     cachedMapIndex_ = INVALID_MAP_INDEX;
@@ -192,11 +211,13 @@ void AStarPather::on_map_change()
 
 std::uint16_t AStarPather::to_index(int row, int col) const
 {
+    // Flattens a row and column into one array slot.
     return static_cast<std::uint16_t>(row * mapWidth_ + col);
 }
 
 GridPos AStarPather::to_grid(std::uint16_t index) const
 {
+    // Restores row and column values from one array slot.
     return GridPos
     {
         static_cast<int>(index / mapWidth_),
@@ -206,11 +227,13 @@ GridPos AStarPather::to_grid(std::uint16_t index) const
 
 bool AStarPather::is_blocked(int row, int col) const
 {
+    // Treats out-of-bounds cells the same as walls.
     return terrain->is_valid_grid_position(row, col) == false || terrain->is_wall(row, col) == true;
 }
 
 float AStarPather::heuristic_cost(std::uint16_t index, std::uint16_t goalIndex, Heuristic heuristic) const
 {
+    // Reads the correct heuristic value from the cached tables.
     const GridPos from = to_grid(index);
     const GridPos goal = to_grid(goalIndex);
     const int dx = std::abs(from.row - goal.row);
@@ -235,6 +258,7 @@ float AStarPather::heuristic_cost(std::uint16_t index, std::uint16_t goalIndex, 
 
 void AStarPather::reset_search_state()
 {
+    // Resets only the nodes touched by the last search.
     for (std::uint16_t i = 0; i < search_.touchedCount; ++i)
     {
         Node &node = nodes_[touched_[i]];
@@ -252,11 +276,13 @@ void AStarPather::reset_search_state()
 
 void AStarPather::mark_touched(std::uint16_t index)
 {
+    // Records nodes so they can be reset cheaply later.
     touched_[search_.touchedCount++] = index;
 }
 
 void AStarPather::set_debug_color(std::uint16_t index, const Color &color) const
 {
+    // Keeps debug coloring optional during the search.
     if (search_.debugColoring == true)
     {
         terrain->set_color(to_grid(index), color);
@@ -265,6 +291,7 @@ void AStarPather::set_debug_color(std::uint16_t index, const Color &color) const
 
 bool AStarPather::open_less(std::uint16_t lhs, std::uint16_t rhs) const
 {
+    // Picks the better node using f cost, then g cost, then index.
     const Node &left = nodes_[lhs];
     const Node &right = nodes_[rhs];
 
@@ -283,6 +310,7 @@ bool AStarPather::open_less(std::uint16_t lhs, std::uint16_t rhs) const
 
 void AStarPather::heap_sift_up(std::uint16_t heapSlot)
 {
+    // move up in the heap
     while (heapSlot > 0)
     {
         const std::uint16_t parentSlot = static_cast<std::uint16_t>((heapSlot - 1) / 2);
@@ -301,6 +329,7 @@ void AStarPather::heap_sift_up(std::uint16_t heapSlot)
 
 void AStarPather::heap_sift_down(std::uint16_t heapSlot)
 {
+    // move down in the heap
     while (true)
     {
         const std::uint16_t left = static_cast<std::uint16_t>(heapSlot * 2 + 1);
@@ -331,6 +360,7 @@ void AStarPather::heap_sift_down(std::uint16_t heapSlot)
 
 void AStarPather::heap_push(std::uint16_t index)
 {
+    // Inserts a node and restores heap order upward.
     openHeap_[search_.openCount] = index;
     nodes_[index].heapIndex = static_cast<std::int16_t>(search_.openCount);
     ++search_.openCount;
@@ -339,6 +369,7 @@ void AStarPather::heap_push(std::uint16_t index)
 
 std::uint16_t AStarPather::heap_pop()
 {
+    // Removes the current best node from the open set.
     const std::uint16_t result = openHeap_[0];
     --search_.openCount;
 
@@ -355,6 +386,7 @@ std::uint16_t AStarPather::heap_pop()
 
 void AStarPather::heap_update(std::uint16_t index)
 {
+    // Reorders a node after its priority changes.
     const std::uint16_t heapSlot = static_cast<std::uint16_t>(nodes_[index].heapIndex);
     heap_sift_up(heapSlot);
     heap_sift_down(static_cast<std::uint16_t>(nodes_[index].heapIndex));
@@ -362,6 +394,7 @@ void AStarPather::heap_update(std::uint16_t index)
 
 bool AStarPather::has_line_of_sight(std::uint16_t fromIndex, std::uint16_t toIndex) const
 {
+    // check direct line of sight
     const GridPos from = to_grid(fromIndex);
     const GridPos to = to_grid(toIndex);
 
@@ -455,6 +488,7 @@ bool AStarPather::has_line_of_sight(std::uint16_t fromIndex, std::uint16_t toInd
 
 void AStarPather::build_index_path(std::array<std::uint16_t, MAX_NODE_COUNT> &pathIndices, int &count) const
 {
+    // Walks parent links backward and then reverses the result.
     std::array<std::uint16_t, MAX_NODE_COUNT> reversed{};
     count = 0;
     std::uint16_t index = search_.goalIndex;
@@ -479,6 +513,7 @@ void AStarPather::build_index_path(std::array<std::uint16_t, MAX_NODE_COUNT> &pa
 
 void AStarPather::build_output_path(PathRequest &request)
 {
+    // final path buffers
     std::array<std::uint16_t, MAX_NODE_COUNT> rawIndices{};
     std::array<std::uint16_t, MAX_NODE_COUNT> rubberIndices{};
     std::array<Vec3, LOCAL_MAX_POINT_COUNT> linearPoints{};
@@ -498,6 +533,7 @@ void AStarPather::build_output_path(PathRequest &request)
 
     if (request.settings.rubberBanding == true && rawCount > 2)
     {
+        // remove extra points
         int rubberCount = 0;
         rubberIndices[rubberCount++] = rawIndices[0];
 
@@ -516,6 +552,7 @@ void AStarPather::build_output_path(PathRequest &request)
 
     int linearCount = 0;
 
+    // Samples extra points first so smoothing has better spacing.
     if (request.settings.smoothing == true && request.settings.rubberBanding == true)
     {
         linearPoints[linearCount++] = terrain->get_world_position(to_grid(workingIndices[0]));
@@ -535,8 +572,10 @@ void AStarPather::build_output_path(PathRequest &request)
         }
     }
 
+    // Replaces any previous output path.
     request.path.clear();
 
+    // Returns the linear path when smoothing is disabled.
     if (request.settings.smoothing == false || linearCount < 2)
     {
         for (int i = 0; i < linearCount; ++i)
@@ -550,6 +589,7 @@ void AStarPather::build_output_path(PathRequest &request)
     int smoothCount = 0;
     smoothPoints[smoothCount++] = linearPoints[0];
 
+    // smooth with Catmull-Rom
     for (int i = 0; i + 1 < linearCount && smoothCount < static_cast<int>(smoothPoints.size()); ++i)
     {
         const Vec3 &p0 = (i == 0) ? linearPoints[0] : linearPoints[i - 1];
@@ -586,14 +626,17 @@ void AStarPather::build_output_path(PathRequest &request)
 
 PathResult AStarPather::start_search(PathRequest &request)
 {
+    // start a new search
     reset_search_state();
     request.path.clear();
 
+    // Supports only A* for the final search.
     if (request.settings.method != Method::ASTAR)
     {
         return PathResult::IMPOSSIBLE;
     }
 
+    // Rebuilds cached graph data when the map changed.
     if (mapReady_ == false || cachedMapIndex_ != terrain->get_map_index())
     {
         preprocess_current_map();
@@ -602,6 +645,7 @@ PathResult AStarPather::start_search(PathRequest &request)
     const GridPos start = terrain->get_grid_position(request.start);
     const GridPos goal = terrain->get_grid_position(request.goal);
 
+    // Rejects requests that start or end in invalid cells.
     if (terrain->is_valid_grid_position(start) == false ||
         terrain->is_valid_grid_position(goal) == false ||
         terrain->is_wall(start) == true ||
@@ -621,6 +665,7 @@ PathResult AStarPather::start_search(PathRequest &request)
     search_.active = true;
     search_.debugColoring = request.settings.debugColoring;
 
+    // Seeds the open set with the start node.
     Node &startNode = nodes_[search_.startIndex];
     startNode.parent = INVALID_NODE;
     startNode.g = 0.0f;
@@ -642,11 +687,13 @@ PathResult AStarPather::start_search(PathRequest &request)
 
 PathResult AStarPather::step_search(PathRequest &request)
 {
+    // process one A* step
     if (search_.active == false)
     {
         return PathResult::IMPOSSIBLE;
     }
 
+    // Means there are no more nodes left to explore.
     if (search_.openCount == 0)
     {
         reset_search_state();
@@ -654,11 +701,13 @@ PathResult AStarPather::step_search(PathRequest &request)
         return PathResult::IMPOSSIBLE;
     }
 
+    // pop the best node
     const std::uint16_t currentIndex = heap_pop();
     Node &currentNode = nodes_[currentIndex];
     currentNode.state = NodeState::ON_CLOSED;
     set_debug_color(currentIndex, Colors::Yellow);
 
+    // Finishes the path as soon as the goal is expanded.
     if (currentIndex == search_.goalIndex)
     {
         build_output_path(request);
@@ -668,6 +717,7 @@ PathResult AStarPather::step_search(PathRequest &request)
 
     const GridPos currentGrid = to_grid(currentIndex);
 
+    // check neighbors
     for (int dir = 0; dir < DIRECTION_COUNT; ++dir)
     {
         if (currentNode.neighbors[dir] == false)
@@ -681,6 +731,7 @@ PathResult AStarPather::step_search(PathRequest &request)
         Node &nextNode = nodes_[nextIndex];
         const float tentativeG = currentNode.g + DIR_COST[dir];
 
+        // Handles a node we are seeing for the first time.
         if (nextNode.state == NodeState::UNVISITED)
         {
             nextNode.parent = currentIndex;
@@ -691,18 +742,21 @@ PathResult AStarPather::step_search(PathRequest &request)
             heap_push(nextIndex);
             set_debug_color(nextIndex, Colors::Blue);
         }
+        // Updates a node when a shorter path was found.
         else if (tentativeG + EPSILON < nextNode.g)
         {
             nextNode.parent = currentIndex;
             nextNode.g = tentativeG;
             nextNode.f = tentativeG + search_.weight * heuristic_cost(nextIndex, search_.goalIndex, search_.heuristic);
 
+            // Reopens the node if it had already been closed.
             if (nextNode.state == NodeState::ON_CLOSED)
             {
                 nextNode.state = NodeState::ON_OPEN;
                 heap_push(nextIndex);
                 set_debug_color(nextIndex, Colors::Blue);
             }
+            // Updates the heap position when the node is still open.
             else
             {
                 heap_update(nextIndex);
@@ -715,16 +769,19 @@ PathResult AStarPather::step_search(PathRequest &request)
 
 PathResult AStarPather::compute_path(PathRequest &request)
 {
+    // main entry point
     if (lookupReady_ == false)
     {
         initialize_lookup_tables();
     }
 
+    // Refreshes graph data if the current cache is stale.
     if (mapReady_ == false || cachedMapIndex_ != terrain->get_map_index())
     {
         preprocess_current_map();
     }
 
+    // Starts a new search when needed.
     if (request.newRequest == true || search_.active == false)
     {
         const PathResult startResult = start_search(request);
@@ -735,11 +792,13 @@ PathResult AStarPather::compute_path(PathRequest &request)
         }
     }
 
+    // Supports debug stepping one expansion at a time.
     if (request.settings.singleStep == true)
     {
         return step_search(request);
     }
 
+    // Keeps stepping until the search finishes.
     while (search_.active == true)
     {
         const PathResult result = step_search(request);
