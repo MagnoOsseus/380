@@ -95,7 +95,21 @@ bool EnemyAgent::logic_tick()
 
     case State::SEEK:
         set_movement_speed(movementSpeed);
-        [[fallthrough]];
+        if (request.path.size() == 0)
+        {
+            const auto searchGridPos = terrain->get_grid_position(get_position());
+
+            if (terrain->is_valid_grid_position(searchGridPos) == true &&
+                terrain->seekLayer.get_value(searchGridPos) > 0.0f)
+            {
+                terrain->seekLayer.set_value(searchGridPos, 0.0f);
+            }
+
+            state = State::IDLE;
+        }
+
+        break;
+
     case State::CHASE:
         if (request.path.size() == 0)
         {
