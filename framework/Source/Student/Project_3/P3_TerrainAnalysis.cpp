@@ -373,7 +373,7 @@ void propagate_solo_occupancy(MapLayer<float> &layer, float decay, float growth)
                 }
             }
 
-            tempLayer[row][col] = lerp(oldValue, maxNeighborInfluence, growth);
+            tempLayer[row][col] = (1.0f - growth) * oldValue + growth * maxNeighborInfluence;
         }
     }
 
@@ -447,7 +447,7 @@ void propagate_dual_occupancy(MapLayer<float> &layer, float decay, float growth)
                 }
             }
 
-            tempLayer[row][col] = lerp(oldValue, strongestInfluence, growth);
+            tempLayer[row][col] = (1.0f - growth) * oldValue + growth * strongestInfluence;
         }
     }
 
@@ -691,7 +691,7 @@ bool enemy_seek_player(MapLayer<float> &layer, AStarAgent *enemy)
 
     float highestValue = 0.0f;
     float bestDistance = FLT_MAX;
-    GridPos bestPos{ -1, -1 };
+    GridPos targetGridPos{ -1, -1 };
     bool foundTarget = false;
 
     for (int row = 0; row < mapHeight; ++row)
@@ -712,20 +712,20 @@ bool enemy_seek_player(MapLayer<float> &layer, AStarAgent *enemy)
             {
                 highestValue = value;
                 bestDistance = distance;
-                bestPos = { row, col };
+                targetGridPos = { row, col };
                 foundTarget = true;
             }
             else if (std::abs(value - highestValue) <= epsilon && distance < bestDistance)
             {
                 bestDistance = distance;
-                bestPos = { row, col };
+                targetGridPos = { row, col };
             }
         }
     }
 
     if (foundTarget == true)
     {
-        enemy->path_to(terrain->get_world_position(bestPos));
+        enemy->path_to(terrain->get_world_position(targetGridPos));
     }
 
     return foundTarget;
