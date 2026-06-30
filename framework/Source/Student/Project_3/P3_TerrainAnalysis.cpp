@@ -118,7 +118,14 @@ void analyze_openness(MapLayer<float> &layer)
             }
 
             const float distance = distance_to_closest_wall(row, col);
-            layer.set_value(row, col, 1.0f / (distance * distance));
+            if (distance > 0.0f)
+            {
+                layer.set_value(row, col, 1.0f / (distance * distance));
+            }
+            else
+            {
+                layer.set_value(row, col, 0.0f);
+            }
         }
     }
 }
