@@ -22,9 +22,28 @@ float distance_to_closest_wall(int row, int col)
         and a wall, respectively.
     */
 
-    // WRITE YOUR CODE HERE
-    
-    return 0.0f; // REPLACE THIS
+    float closestDistance = FLT_MAX;
+    const int mapHeight = terrain->get_map_height();
+    const int mapWidth = terrain->get_map_width();
+
+    for (int checkRow = -1; checkRow <= mapHeight; ++checkRow)
+    {
+        for (int checkCol = -1; checkCol <= mapWidth; ++checkCol)
+        {
+            const bool inBounds = terrain->is_valid_grid_position(checkRow, checkCol);
+            const bool isWallCell = inBounds == false || terrain->is_wall(checkRow, checkCol);
+
+            if (isWallCell == true)
+            {
+                const float dRow = static_cast<float>(checkRow - row);
+                const float dCol = static_cast<float>(checkCol - col);
+                const float distance = std::sqrt(dRow * dRow + dCol * dCol);
+                closestDistance = std::min(closestDistance, distance);
+            }
+        }
+    }
+
+    return closestDistance;
 }
 
 bool is_clear_path(int row0, int col0, int row1, int col1)
@@ -38,9 +57,43 @@ bool is_clear_path(int row0, int col0, int row1, int col1)
         function in the global terrain to determine if a cell is a wall or not.
     */
 
-    // WRITE YOUR CODE HERE
+    const Vec2 start(static_cast<float>(col0) + 0.5f, static_cast<float>(row0) + 0.5f);
+    const Vec2 end(static_cast<float>(col1) + 0.5f, static_cast<float>(row1) + 0.5f);
+    const float puff = 0.001f;
 
-    return false; // REPLACE THIS
+    const int mapHeight = terrain->get_map_height();
+    const int mapWidth = terrain->get_map_width();
+
+    for (int row = 0; row < mapHeight; ++row)
+    {
+        for (int col = 0; col < mapWidth; ++col)
+        {
+            if (terrain->is_wall(row, col) == false)
+            {
+                continue;
+            }
+
+            const float minX = static_cast<float>(col) - puff;
+            const float maxX = static_cast<float>(col + 1) + puff;
+            const float minY = static_cast<float>(row) - puff;
+            const float maxY = static_cast<float>(row + 1) + puff;
+
+            const Vec2 topLeft(minX, minY);
+            const Vec2 topRight(maxX, minY);
+            const Vec2 bottomLeft(minX, maxY);
+            const Vec2 bottomRight(maxX, maxY);
+
+            if (line_intersect(start, end, topLeft, topRight) == true ||
+                line_intersect(start, end, topRight, bottomRight) == true ||
+                line_intersect(start, end, bottomRight, bottomLeft) == true ||
+                line_intersect(start, end, bottomLeft, topLeft) == true)
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 void analyze_openness(MapLayer<float> &layer)
@@ -51,7 +104,23 @@ void analyze_openness(MapLayer<float> &layer)
         distance_to_closest_wall helper function.  Walls should not be marked.
     */
 
-    // WRITE YOUR CODE HERE
+    const int mapHeight = terrain->get_map_height();
+    const int mapWidth = terrain->get_map_width();
+
+    for (int row = 0; row < mapHeight; ++row)
+    {
+        for (int col = 0; col < mapWidth; ++col)
+        {
+            if (terrain->is_wall(row, col) == true)
+            {
+                layer.set_value(row, col, 0.0f);
+                continue;
+            }
+
+            const float distance = distance_to_closest_wall(row, col);
+            layer.set_value(row, col, 1.0f / (distance * distance));
+        }
+    }
 }
 
 void analyze_visibility(MapLayer<float> &layer)
@@ -66,7 +135,42 @@ void analyze_visibility(MapLayer<float> &layer)
         helper function.
     */
 
-    // WRITE YOUR CODE HERE
+    const int mapHeight = terrain->get_map_height();
+    const int mapWidth = terrain->get_map_width();
+
+    for (int row = 0; row < mapHeight; ++row)
+    {
+        for (int col = 0; col < mapWidth; ++col)
+        {
+            if (terrain->is_wall(row, col) == true)
+            {
+                layer.set_value(row, col, 0.0f);
+                continue;
+            }
+
+            int visibleCount = 0;
+
+            for (int checkRow = 0; checkRow < mapHeight; ++checkRow)
+            {
+                for (int checkCol = 0; checkCol < mapWidth; ++checkCol)
+                {
+                    if (terrain->is_wall(checkRow, checkCol) == true)
+                    {
+                        continue;
+                    }
+
+                    if (is_clear_path(row, col, checkRow, checkCol) == true)
+                    {
+                        ++visibleCount;
+                    }
+                }
+            }
+
+            float value = static_cast<float>(visibleCount) / 160.0f;
+            value = std::min(value, 1.0f);
+            layer.set_value(row, col, value);
+        }
+    }
 }
 
 void analyze_visible_to_cell(MapLayer<float> &layer, int row, int col)
@@ -81,7 +185,63 @@ void analyze_visible_to_cell(MapLayer<float> &layer, int row, int col)
         helper function.
     */
 
-    // WRITE YOUR CODE HERE
+    const int mapHeight = terrain->get_map_height();
+    const int mapWidth = terrain->get_map_width();
+    bool visible[Terrain::maxMapHeight][Terrain::maxMapWidth] = {};
+
+    for (int checkRow = 0; checkRow < mapHeight; ++checkRow)
+    {
+        for (int checkCol = 0; checkCol < mapWidth; ++checkCol)
+        {
+            if (terrain->is_wall(checkRow, checkCol) == true)
+            {
+                visible[checkRow][checkCol] = false;
+                continue;
+            }
+
+            visible[checkRow][checkCol] = is_clear_path(row, col, checkRow, checkCol);
+        }
+    }
+
+    for (int checkRow = 0; checkRow < mapHeight; ++checkRow)
+    {
+        for (int checkCol = 0; checkCol < mapWidth; ++checkCol)
+        {
+            if (visible[checkRow][checkCol] == true)
+            {
+                layer.set_value(checkRow, checkCol, 1.0f);
+                continue;
+            }
+
+            bool adjacentToVisible = false;
+            for (int rowOffset = -1; rowOffset <= 1 && adjacentToVisible == false; ++rowOffset)
+            {
+                for (int colOffset = -1; colOffset <= 1; ++colOffset)
+                {
+                    if (rowOffset == 0 && colOffset == 0)
+                    {
+                        continue;
+                    }
+
+                    const int neighborRow = checkRow + rowOffset;
+                    const int neighborCol = checkCol + colOffset;
+
+                    if (terrain->is_valid_grid_position(neighborRow, neighborCol) == false)
+                    {
+                        continue;
+                    }
+
+                    if (visible[neighborRow][neighborCol] == true)
+                    {
+                        adjacentToVisible = true;
+                        break;
+                    }
+                }
+            }
+
+            layer.set_value(checkRow, checkCol, adjacentToVisible ? 0.5f : 0.0f);
+        }
+    }
 }
 
 void analyze_agent_vision(MapLayer<float> &layer, const Agent *agent)
@@ -104,7 +264,54 @@ void analyze_agent_vision(MapLayer<float> &layer, const Agent *agent)
         helper function.
     */
 
-    // WRITE YOUR CODE HERE
+    const auto agentWorldPos = agent->get_position();
+    const auto agentGridPos = terrain->get_grid_position(agentWorldPos);
+
+    if (terrain->is_valid_grid_position(agentGridPos) == false)
+    {
+        return;
+    }
+
+    Vec3 viewVector3 = agent->get_forward_vector();
+    viewVector3.y = 0.0f;
+
+    if (viewVector3.Length() == 0.0f)
+    {
+        return;
+    }
+    viewVector3.Normalize();
+
+    const Vec2 viewVector(viewVector3.x, viewVector3.z);
+    const float fovThreshold = -0.1f;
+
+    const int mapHeight = terrain->get_map_height();
+    const int mapWidth = terrain->get_map_width();
+
+    for (int row = 0; row < mapHeight; ++row)
+    {
+        for (int col = 0; col < mapWidth; ++col)
+        {
+            if (terrain->is_wall(row, col) == true)
+            {
+                continue;
+            }
+
+            const auto cellWorldPos = terrain->get_world_position(row, col);
+            Vec2 toCell(cellWorldPos.x - agentWorldPos.x, cellWorldPos.z - agentWorldPos.z);
+
+            float dot = 1.0f;
+            if (toCell.Length() > 0.0f)
+            {
+                toCell.Normalize();
+                dot = viewVector.x * toCell.x + viewVector.y * toCell.y;
+            }
+
+            if (dot >= fovThreshold && is_clear_path(agentGridPos.row, agentGridPos.col, row, col) == true)
+            {
+                layer.set_value(row, col, 1.0f);
+            }
+        }
+    }
 }
 
 void propagate_solo_occupancy(MapLayer<float> &layer, float decay, float growth)
@@ -123,7 +330,53 @@ void propagate_solo_occupancy(MapLayer<float> &layer, float decay, float growth)
         the given layer;
     */
     
-    // WRITE YOUR CODE HERE
+    float tempLayer[Terrain::maxMapHeight][Terrain::maxMapWidth] = {};
+    const int mapHeight = terrain->get_map_height();
+    const int mapWidth = terrain->get_map_width();
+    const float diagonalDistance = std::sqrt(2.0f);
+
+    for (int row = 0; row < mapHeight; ++row)
+    {
+        for (int col = 0; col < mapWidth; ++col)
+        {
+            const float oldValue = layer.get_value(row, col);
+            float maxNeighborInfluence = oldValue;
+
+            for (int rowOffset = -1; rowOffset <= 1; ++rowOffset)
+            {
+                for (int colOffset = -1; colOffset <= 1; ++colOffset)
+                {
+                    if (rowOffset == 0 && colOffset == 0)
+                    {
+                        continue;
+                    }
+
+                    const int neighborRow = row + rowOffset;
+                    const int neighborCol = col + colOffset;
+
+                    if (terrain->is_valid_grid_position(neighborRow, neighborCol) == false)
+                    {
+                        continue;
+                    }
+
+                    const float distance = (rowOffset == 0 || colOffset == 0) ? 1.0f : diagonalDistance;
+                    const float oldInfluence = layer.get_value(neighborRow, neighborCol);
+                    const float decayedInfluence = oldInfluence * std::exp(-1.0f * distance * decay);
+                    maxNeighborInfluence = std::max(maxNeighborInfluence, decayedInfluence);
+                }
+            }
+
+            tempLayer[row][col] = lerp(oldValue, maxNeighborInfluence, growth);
+        }
+    }
+
+    for (int row = 0; row < mapHeight; ++row)
+    {
+        for (int col = 0; col < mapWidth; ++col)
+        {
+            layer.set_value(row, col, tempLayer[row][col]);
+        }
+    }
 }
 
 void propagate_dual_occupancy(MapLayer<float> &layer, float decay, float growth)
@@ -144,7 +397,60 @@ void propagate_dual_occupancy(MapLayer<float> &layer, float decay, float growth)
         the given layer;
     */
 
-    // WRITE YOUR CODE HERE
+    float tempLayer[Terrain::maxMapHeight][Terrain::maxMapWidth] = {};
+    const int mapHeight = terrain->get_map_height();
+    const int mapWidth = terrain->get_map_width();
+    const float diagonalDistance = std::sqrt(2.0f);
+
+    for (int row = 0; row < mapHeight; ++row)
+    {
+        for (int col = 0; col < mapWidth; ++col)
+        {
+            const float oldValue = layer.get_value(row, col);
+            float strongestInfluence = oldValue;
+            float strongestAbs = std::abs(oldValue);
+
+            for (int rowOffset = -1; rowOffset <= 1; ++rowOffset)
+            {
+                for (int colOffset = -1; colOffset <= 1; ++colOffset)
+                {
+                    if (rowOffset == 0 && colOffset == 0)
+                    {
+                        continue;
+                    }
+
+                    const int neighborRow = row + rowOffset;
+                    const int neighborCol = col + colOffset;
+
+                    if (terrain->is_valid_grid_position(neighborRow, neighborCol) == false)
+                    {
+                        continue;
+                    }
+
+                    const float distance = (rowOffset == 0 || colOffset == 0) ? 1.0f : diagonalDistance;
+                    const float oldInfluence = layer.get_value(neighborRow, neighborCol);
+                    const float decayedInfluence = oldInfluence * std::exp(-1.0f * distance * decay);
+                    const float decayedAbs = std::abs(decayedInfluence);
+
+                    if (decayedAbs > strongestAbs)
+                    {
+                        strongestAbs = decayedAbs;
+                        strongestInfluence = decayedInfluence;
+                    }
+                }
+            }
+
+            tempLayer[row][col] = lerp(oldValue, strongestInfluence, growth);
+        }
+    }
+
+    for (int row = 0; row < mapHeight; ++row)
+    {
+        for (int col = 0; col < mapWidth; ++col)
+        {
+            layer.set_value(row, col, tempLayer[row][col]);
+        }
+    }
 }
 
 void normalize_solo_occupancy(MapLayer<float> &layer)
@@ -155,7 +461,39 @@ void normalize_solo_occupancy(MapLayer<float> &layer)
         range of [0, 1].  Negative values should be left unmodified.
     */
 
-    // WRITE YOUR CODE HERE
+    const int mapHeight = terrain->get_map_height();
+    const int mapWidth = terrain->get_map_width();
+
+    float greatestPositive = 0.0f;
+
+    for (int row = 0; row < mapHeight; ++row)
+    {
+        for (int col = 0; col < mapWidth; ++col)
+        {
+            const float value = layer.get_value(row, col);
+            if (value > greatestPositive)
+            {
+                greatestPositive = value;
+            }
+        }
+    }
+
+    if (greatestPositive <= 0.0f)
+    {
+        return;
+    }
+
+    for (int row = 0; row < mapHeight; ++row)
+    {
+        for (int col = 0; col < mapWidth; ++col)
+        {
+            const float value = layer.get_value(row, col);
+            if (value > 0.0f)
+            {
+                layer.set_value(row, col, value / greatestPositive);
+            }
+        }
+    }
 }
 
 void normalize_dual_occupancy(MapLayer<float> &layer)
@@ -169,7 +507,44 @@ void normalize_dual_occupancy(MapLayer<float> &layer)
         (so that it remains a negative number).  This will keep the values in the range of [-1, 1].
     */
 
-    // WRITE YOUR CODE HERE
+    const int mapHeight = terrain->get_map_height();
+    const int mapWidth = terrain->get_map_width();
+
+    float greatestPositive = 0.0f;
+    float leastNegative = 0.0f;
+
+    for (int row = 0; row < mapHeight; ++row)
+    {
+        for (int col = 0; col < mapWidth; ++col)
+        {
+            const float value = layer.get_value(row, col);
+            if (value > greatestPositive)
+            {
+                greatestPositive = value;
+            }
+            else if (value < leastNegative)
+            {
+                leastNegative = value;
+            }
+        }
+    }
+
+    for (int row = 0; row < mapHeight; ++row)
+    {
+        for (int col = 0; col < mapWidth; ++col)
+        {
+            const float value = layer.get_value(row, col);
+
+            if (value > 0.0f && greatestPositive > 0.0f)
+            {
+                layer.set_value(row, col, value / greatestPositive);
+            }
+            else if (value < 0.0f && leastNegative < 0.0f)
+            {
+                layer.set_value(row, col, value / (-leastNegative));
+            }
+        }
+    }
 }
 
 void enemy_field_of_view(MapLayer<float> &layer, float fovAngle, float closeDistance, float occupancyValue, AStarAgent *enemy)
@@ -189,7 +564,75 @@ void enemy_field_of_view(MapLayer<float> &layer, float fovAngle, float closeDist
         as a fov cone.
     */
 
-    // WRITE YOUR CODE HERE
+    const int mapHeight = terrain->get_map_height();
+    const int mapWidth = terrain->get_map_width();
+
+    for (int row = 0; row < mapHeight; ++row)
+    {
+        for (int col = 0; col < mapWidth; ++col)
+        {
+            if (layer.get_value(row, col) < 0.0f)
+            {
+                layer.set_value(row, col, 0.0f);
+            }
+        }
+    }
+
+    const auto enemyWorldPos = enemy->get_position();
+    const auto enemyGridPos = terrain->get_grid_position(enemyWorldPos);
+
+    if (terrain->is_valid_grid_position(enemyGridPos) == false)
+    {
+        return;
+    }
+
+    Vec3 viewVector3 = enemy->get_forward_vector();
+    viewVector3.y = 0.0f;
+
+    if (viewVector3.Length() == 0.0f)
+    {
+        return;
+    }
+    viewVector3.Normalize();
+
+    const Vec2 viewVector(viewVector3.x, viewVector3.z);
+    const float halfAngleRadians = (fovAngle * 0.5f) * (PI / 180.0f);
+    const float minCosine = std::cos(halfAngleRadians);
+
+    for (int row = 0; row < mapHeight; ++row)
+    {
+        for (int col = 0; col < mapWidth; ++col)
+        {
+            if (terrain->is_wall(row, col) == true)
+            {
+                continue;
+            }
+
+            const float dRow = static_cast<float>(row - enemyGridPos.row);
+            const float dCol = static_cast<float>(col - enemyGridPos.col);
+            const float distance = std::sqrt(dRow * dRow + dCol * dCol);
+
+            bool withinFovOrClose = distance <= closeDistance;
+
+            if (withinFovOrClose == false)
+            {
+                const auto cellWorldPos = terrain->get_world_position(row, col);
+                Vec2 toCell(cellWorldPos.x - enemyWorldPos.x, cellWorldPos.z - enemyWorldPos.z);
+
+                if (toCell.Length() > 0.0f)
+                {
+                    toCell.Normalize();
+                    const float dot = viewVector.x * toCell.x + viewVector.y * toCell.y;
+                    withinFovOrClose = dot >= minCosine;
+                }
+            }
+
+            if (withinFovOrClose == true && is_clear_path(enemyGridPos.row, enemyGridPos.col, row, col) == true)
+            {
+                layer.set_value(row, col, occupancyValue);
+            }
+        }
+    }
 }
 
 bool enemy_find_player(MapLayer<float> &layer, AStarAgent *enemy, Agent *player)
@@ -229,7 +672,54 @@ bool enemy_seek_player(MapLayer<float> &layer, AStarAgent *enemy)
         Return whether a target cell was found.
     */
 
-    // WRITE YOUR CODE HERE
+    const auto enemyGridPos = terrain->get_grid_position(enemy->get_position());
+    if (terrain->is_valid_grid_position(enemyGridPos) == false)
+    {
+        return false;
+    }
 
-    return false; // REPLACE THIS
+    const int mapHeight = terrain->get_map_height();
+    const int mapWidth = terrain->get_map_width();
+    const float epsilon = 0.0001f;
+
+    float highestValue = 0.0f;
+    float bestDistance = FLT_MAX;
+    GridPos bestPos{ -1, -1 };
+    bool foundTarget = false;
+
+    for (int row = 0; row < mapHeight; ++row)
+    {
+        for (int col = 0; col < mapWidth; ++col)
+        {
+            const float value = layer.get_value(row, col);
+            if (value <= 0.0f)
+            {
+                continue;
+            }
+
+            const float dRow = static_cast<float>(row - enemyGridPos.row);
+            const float dCol = static_cast<float>(col - enemyGridPos.col);
+            const float distance = std::sqrt(dRow * dRow + dCol * dCol);
+
+            if (foundTarget == false || value > highestValue + epsilon)
+            {
+                highestValue = value;
+                bestDistance = distance;
+                bestPos = { row, col };
+                foundTarget = true;
+            }
+            else if (std::abs(value - highestValue) <= epsilon && distance < bestDistance)
+            {
+                bestDistance = distance;
+                bestPos = { row, col };
+            }
+        }
+    }
+
+    if (foundTarget == true)
+    {
+        enemy->path_to(terrain->get_world_position(bestPos));
+    }
+
+    return foundTarget;
 }
