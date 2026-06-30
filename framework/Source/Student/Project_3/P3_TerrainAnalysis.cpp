@@ -347,7 +347,7 @@ void propagate_solo_occupancy(MapLayer<float> &layer, float decay, float growth)
         for (int col = 0; col < mapWidth; ++col)
         {
             const float oldValue = layer.get_value(row, col);
-            float maxNeighborInfluence = oldValue;
+            float maxNeighborInfluence = 0.0f;
 
             for (int rowOffset = -1; rowOffset <= 1; ++rowOffset)
             {
@@ -414,8 +414,8 @@ void propagate_dual_occupancy(MapLayer<float> &layer, float decay, float growth)
         for (int col = 0; col < mapWidth; ++col)
         {
             const float oldValue = layer.get_value(row, col);
-            float strongestInfluence = oldValue;
-            float strongestAbs = std::abs(oldValue);
+            float strongestInfluence = 0.0f;
+            float strongestAbs = 0.0f;
 
             for (int rowOffset = -1; rowOffset <= 1; ++rowOffset)
             {
