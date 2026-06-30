@@ -698,6 +698,11 @@ bool enemy_seek_player(MapLayer<float> &layer, AStarAgent *enemy)
     {
         for (int col = 0; col < mapWidth; ++col)
         {
+            if (terrain->is_wall(row, col) == true)
+            {
+                continue;
+            }
+
             const float value = layer.get_value(row, col);
             if (value <= 0.0f)
             {
