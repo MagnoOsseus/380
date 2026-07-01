@@ -647,6 +647,10 @@ bool enemy_find_player(MapLayer<float> &layer, AStarAgent *enemy, Agent *player)
     /*
         Check if the player's current tile has a negative value, ie in the fov cone
         or within a detection radius.
+
+        If the player is not visible, propagate the occupancy map from the last known
+        position so the search area expands over time, enabling the SEEK behavior to
+        find a meaningful goal even after the enemy reaches the last known location.
     */
 
     const auto &playerWorldPos = player->get_position();
@@ -663,6 +667,9 @@ bool enemy_find_player(MapLayer<float> &layer, AStarAgent *enemy, Agent *player)
     }
 
     // player isn't in the detection radius or fov cone, OR somehow off the map
+    // propagate the last known position outward so the seek area grows each tick
+    propagate_solo_occupancy(layer, 0.05f, 0.15f);
+
     return false;
 }
 
