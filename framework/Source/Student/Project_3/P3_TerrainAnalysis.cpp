@@ -346,6 +346,12 @@ void propagate_solo_occupancy(MapLayer<float> &layer, float decay, float growth)
     {
         for (int col = 0; col < mapWidth; ++col)
         {
+            if (terrain->is_wall(row, col) == true)
+            {
+                tempLayer[row][col] = 0.0f;
+                continue;
+            }
+
             const float oldValue = layer.get_value(row, col);
             float maxNeighborInfluence = 0.0f;
 
@@ -362,6 +368,11 @@ void propagate_solo_occupancy(MapLayer<float> &layer, float decay, float growth)
                     const int neighborCol = col + colOffset;
 
                     if (terrain->is_valid_grid_position(neighborRow, neighborCol) == false)
+                    {
+                        continue;
+                    }
+
+                    if (terrain->is_wall(neighborRow, neighborCol) == true)
                     {
                         continue;
                     }
@@ -413,6 +424,12 @@ void propagate_dual_occupancy(MapLayer<float> &layer, float decay, float growth)
     {
         for (int col = 0; col < mapWidth; ++col)
         {
+            if (terrain->is_wall(row, col) == true)
+            {
+                tempLayer[row][col] = 0.0f;
+                continue;
+            }
+
             const float oldValue = layer.get_value(row, col);
             float strongestInfluence = 0.0f;
             float strongestAbs = 0.0f;
@@ -430,6 +447,11 @@ void propagate_dual_occupancy(MapLayer<float> &layer, float decay, float growth)
                     const int neighborCol = col + colOffset;
 
                     if (terrain->is_valid_grid_position(neighborRow, neighborCol) == false)
+                    {
+                        continue;
+                    }
+
+                    if (terrain->is_wall(neighborRow, neighborCol) == true)
                     {
                         continue;
                     }
@@ -676,8 +698,62 @@ bool enemy_seek_player(MapLayer<float> &layer, AStarAgent *enemy)
         If there are multiple cells with the same highest value, then pick the
         cell closest to the enemy.
 
+        Before searching, check how many cells already have positive values.
+        If only one positive cell exists (the fresh seed from when the player was
+        last spotted), the AI has just lost the player: clear that seed and return
+        false so the state machine enters PATROL (requirement 9 - if AI loses player,
+        behavior: PATROL).
+
+        If multiple positive cells exist (propagated wave from a previous seek
+        cycle), expand the search frontier and find the best next goal, returning
+        true to continue seeking.
+
+        When no target can be found after propagation, clear any residual positive
+        values so PATROL starts with a clean occupancy layer.
+
         Return whether a target cell was found.
     */
+
+    const int mapHeight = terrain->get_map_height();
+    const int mapWidth = terrain->get_map_width();
+
+    // Reusable helper: zero out any remaining positive values in the layer so
+    // the PATROL state starts with a clean occupancy map.
+    const auto clear_positive_values = [&layer]()
+    {
+        layer.for_each([](float &v) { if (v > 0.0f) v = 0.0f; });
+    };
+
+    // Count positive cells before propagation.
+    // A count of 0 or 1 means only the fresh CHASE seed remains (player was just
+    // lost): skip seeking and transition directly to PATROL (requirement 9).
+    int positiveCellCount = 0;
+    for (int row = 0; row < mapHeight; ++row)
+    {
+        for (int col = 0; col < mapWidth; ++col)
+        {
+            if (layer.get_value(row, col) > 0.0f)
+            {
+                ++positiveCellCount;
+            }
+        }
+    }
+
+    if (positiveCellCount <= 1)
+    {
+        // Clear the residual seed so PATROL begins with a clean occupancy layer.
+        clear_positive_values();
+        return false;
+    }
+
+    // Number of propagation rounds used to advance the wave-search frontier.
+    // Each call to this function from IDLE expands the searchable area by this
+    // many cells, implementing a step-by-step wave that grows on every seek cycle.
+    constexpr int SEEK_PROPAGATION_ITERATIONS = 3;
+
+    // Expand the search frontier before picking the next goal.
+    for (int i = 0; i < SEEK_PROPAGATION_ITERATIONS; ++i)
+        propagate_solo_occupancy(layer, 0.05f, 0.15f);
 
     const auto enemyGridPos = terrain->get_grid_position(enemy->get_position());
     if (terrain->is_valid_grid_position(enemyGridPos) == false)
@@ -685,8 +761,6 @@ bool enemy_seek_player(MapLayer<float> &layer, AStarAgent *enemy)
         return false;
     }
 
-    const int mapHeight = terrain->get_map_height();
-    const int mapWidth = terrain->get_map_width();
     const float epsilon = 0.0001f;
 
     float highestValue = 0.0f;
@@ -726,6 +800,11 @@ bool enemy_seek_player(MapLayer<float> &layer, AStarAgent *enemy)
     if (foundTarget == true)
     {
         enemy->path_to(terrain->get_world_position(targetGridPos));
+    }
+    else
+    {
+        // Search exhausted: clear residual positive values so PATROL starts fresh.
+        clear_positive_values();
     }
 
     return foundTarget;
