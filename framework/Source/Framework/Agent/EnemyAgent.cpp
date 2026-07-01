@@ -36,13 +36,14 @@ void EnemyAgent::path_to(const Vec3 &point)
 
 bool EnemyAgent::logic_tick()
 {
-    // update the detection area
+    // 1) Compute FOV layer
     enemy_field_of_view(terrain->seekLayer, fov, radius, state == State::PATROL ? -0.25f : -0.5f, this);
     normalize_solo_occupancy(terrain->seekLayer);
 
-    // see if the player is within the detection area
+    // 2) If AI sees the player (player's tile has negative occupancy value)
     if (enemy_find_player(terrain->seekLayer, this, player) == true)
     {
+        // behavior: RUN TO PLAYER
         if (state != State::CHASE)
         {
             state = State::CHASE;
@@ -52,6 +53,7 @@ bool EnemyAgent::logic_tick()
         const auto playerWorld = player->get_position();
         const auto playerGrid = terrain->get_grid_position(playerWorld);
 
+        // 3) Pick the player's position as goal
         if (playerGrid != playerPrevious)
         {
             set_movement_speed(movementSpeed * repathFactor);
@@ -76,44 +78,72 @@ bool EnemyAgent::logic_tick()
             return true;
         }
     }
-
-    switch (state)
+    else
     {
-    case State::IDLE:
-        set_movement_speed(movementSpeed);
-        // see if there is a position it makes sense to look for the player
-        if (enemy_seek_player(terrain->seekLayer, this) == true)
+        // 4) AI can't see the player
+        switch (state)
         {
-            state = State::SEEK;
-        }
-        else
-        {
-            state = State::PATROL;
-            update_timer(0.0f);
-        }
-        break;
-
-    case State::SEEK:
-        set_movement_speed(movementSpeed);
-        [[fallthrough]];
-    case State::CHASE:
-        if (request.path.size() == 0)
-        {
-            state = State::IDLE;
-        }
-
-        break;
-
-    case State::PATROL:
-        if (update_timer(reactTimeIdle))
-        {
-            if (request.path.size() == 0)
+        case State::IDLE:
+            set_movement_speed(movementSpeed);
+            if (enemy_seek_player(terrain->seekLayer, this) == true)
             {
-                choose_random_goal();
+                state = State::SEEK;
+            }
+            else
+            {
+                // 8) No tile has 1.0 occupancy value - AI loses the player
+                // 9) behavior: PATROL
+                state = State::PATROL;
                 update_timer(0.0f);
             }
+            break;
+
+        case State::CHASE:
+            // 5) Player moved out of sight - switch to SEEK immediately using last known position
+            state = State::SEEK;
+            set_movement_speed(movementSpeed);
+            // 7) Pick the closest tile with 1.0 occupancy value as goal
+            if (enemy_seek_player(terrain->seekLayer, this) == false)
+            {
+                // 8) No tile has 1.0 occupancy value - AI loses the player
+                // 9) behavior: PATROL
+                state = State::PATROL;
+                update_timer(0.0f);
+            }
+            break;
+
+        case State::SEEK:
+            set_movement_speed(movementSpeed);
+            if (request.path.size() == 0)
+            {
+                // Arrived at seek target - clear it so we don't revisit it
+                const auto currentGrid = terrain->get_grid_position(get_position());
+                if (terrain->is_valid_grid_position(currentGrid))
+                {
+                    terrain->seekLayer.set_value(currentGrid, 0.0f);
+                }
+                // 7) Pick the next closest tile with highest occupancy value
+                if (enemy_seek_player(terrain->seekLayer, this) == false)
+                {
+                    // 8) No tile has 1.0 occupancy value - AI loses the player
+                    // 9) behavior: PATROL
+                    state = State::PATROL;
+                    update_timer(0.0f);
+                }
+            }
+            break;
+
+        case State::PATROL:
+            if (update_timer(reactTimeIdle))
+            {
+                if (request.path.size() == 0)
+                {
+                    choose_random_goal();
+                    update_timer(0.0f);
+                }
+            }
+            break;
         }
-        break;
     }
 
     return false;
