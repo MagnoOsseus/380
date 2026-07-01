@@ -346,6 +346,12 @@ void propagate_solo_occupancy(MapLayer<float> &layer, float decay, float growth)
     {
         for (int col = 0; col < mapWidth; ++col)
         {
+            if (terrain->is_wall(row, col) == true)
+            {
+                tempLayer[row][col] = 0.0f;
+                continue;
+            }
+
             const float oldValue = layer.get_value(row, col);
             float maxNeighborInfluence = 0.0f;
 
@@ -362,6 +368,11 @@ void propagate_solo_occupancy(MapLayer<float> &layer, float decay, float growth)
                     const int neighborCol = col + colOffset;
 
                     if (terrain->is_valid_grid_position(neighborRow, neighborCol) == false)
+                    {
+                        continue;
+                    }
+
+                    if (terrain->is_wall(neighborRow, neighborCol) == true)
                     {
                         continue;
                     }
@@ -413,6 +424,12 @@ void propagate_dual_occupancy(MapLayer<float> &layer, float decay, float growth)
     {
         for (int col = 0; col < mapWidth; ++col)
         {
+            if (terrain->is_wall(row, col) == true)
+            {
+                tempLayer[row][col] = 0.0f;
+                continue;
+            }
+
             const float oldValue = layer.get_value(row, col);
             float strongestInfluence = 0.0f;
             float strongestAbs = 0.0f;
@@ -430,6 +447,11 @@ void propagate_dual_occupancy(MapLayer<float> &layer, float decay, float growth)
                     const int neighborCol = col + colOffset;
 
                     if (terrain->is_valid_grid_position(neighborRow, neighborCol) == false)
+                    {
+                        continue;
+                    }
+
+                    if (terrain->is_wall(neighborRow, neighborCol) == true)
                     {
                         continue;
                     }
@@ -610,6 +632,10 @@ void enemy_field_of_view(MapLayer<float> &layer, float fovAngle, float closeDist
     {
         for (int col = 0; col < mapWidth; ++col)
         {
+            if (terrain->is_wall(row, col) == true)
+            {
+                continue;
+            }
 
             const float dRow = static_cast<float>(row - enemyGridPos.row);
             const float dCol = static_cast<float>(col - enemyGridPos.col);
@@ -659,6 +685,10 @@ bool enemy_find_player(MapLayer<float> &layer, AStarAgent *enemy, Agent *player)
     }
 
     // player isn't in the detection radius or fov cone, OR somehow off the map
+    // propagate the last known position outward so the seek area grows each tick
+    // decay=0.05 (slow fade per cell distance), growth=0.15 (interpolation weight toward neighbor influence)
+    propagate_solo_occupancy(layer, 0.05f, 0.15f);
+
     return false;
 }
 
@@ -672,19 +702,8 @@ bool enemy_seek_player(MapLayer<float> &layer, AStarAgent *enemy)
         If there are multiple cells with the same highest value, then pick the
         cell closest to the enemy.
 
-        Before searching, propagate the occupancy map a few times so that the
-        search area expands outward from whatever values remain.  This implements
-        the step-by-step "wave" search: each time the enemy arrives at its last
-        seek goal and calls this function again, the wave front advances further
-        into unexplored territory.  Using the same decay/growth as the initial
-        seeding keeps the gradient consistent.
-
         Return whether a target cell was found.
     */
-
-    // Expand the search frontier before picking the next goal
-    for (int i = 0; i < 3; ++i)
-        propagate_solo_occupancy(layer, 0.05f, 0.15f);
 
     const auto enemyGridPos = terrain->get_grid_position(enemy->get_position());
     if (terrain->is_valid_grid_position(enemyGridPos) == false)
