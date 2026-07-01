@@ -298,7 +298,7 @@ void analyze_agent_vision(MapLayer<float> &layer, const Agent *agent)
     {
         for (int col = 0; col < mapWidth; ++col)
         {
-            if (terrain->is_wall(row, col) == true)
+            if (terrain->is_wall(row, col))
             {
                 continue;
             }
