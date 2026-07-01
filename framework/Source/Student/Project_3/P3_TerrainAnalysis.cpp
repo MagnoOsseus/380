@@ -668,6 +668,7 @@ bool enemy_find_player(MapLayer<float> &layer, AStarAgent *enemy, Agent *player)
 
     // player isn't in the detection radius or fov cone, OR somehow off the map
     // propagate the last known position outward so the seek area grows each tick
+    // decay=0.05 (slow fade per cell distance), growth=0.15 (interpolation weight toward neighbor influence)
     propagate_solo_occupancy(layer, 0.05f, 0.15f);
 
     return false;
