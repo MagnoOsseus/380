@@ -610,10 +610,6 @@ void enemy_field_of_view(MapLayer<float> &layer, float fovAngle, float closeDist
     {
         for (int col = 0; col < mapWidth; ++col)
         {
-            if (terrain->is_wall(row, col) == true)
-            {
-                continue;
-            }
 
             const float dRow = static_cast<float>(row - enemyGridPos.row);
             const float dCol = static_cast<float>(col - enemyGridPos.col);
