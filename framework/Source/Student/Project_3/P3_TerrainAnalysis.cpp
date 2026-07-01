@@ -133,9 +133,9 @@ void analyze_openness(MapLayer<float> &layer)
 void analyze_visibility(MapLayer<float> &layer)
 {
     /*
-        Mark every cell in the given layer with the number of cells that
-        are visible to it, divided by 160 (a magic number that looks good).  Make sure
-        to cap the value at 1.0 as well.
+        For every cell in the given layer mark it with 1.0
+        if it is visible to the given cell, 0.5 if it isn't visible but is next to a visible cell,
+        or 0.0 otherwise.
 
         Two cells are visible to each other if a line between their centerpoints doesn't
         intersect the four boundary lines of every wall cell.  Make use of the is_clear_path
@@ -698,35 +698,19 @@ bool enemy_seek_player(MapLayer<float> &layer, AStarAgent *enemy)
         If there are multiple cells with the same highest value, then pick the
         cell closest to the enemy.
 
-        Before searching, check how many cells already have positive values.
-        If only one positive cell exists (the fresh seed from when the player was
-        last spotted), the AI has just lost the player: clear that seed and return
-        false so the state machine enters PATROL (requirement 9 - if AI loses player,
-        behavior: PATROL).
-
-        If multiple positive cells exist (propagated wave from a previous seek
-        cycle), expand the search frontier and find the best next goal, returning
-        true to continue seeking.
-
-        When no target can be found after propagation, clear any residual positive
-        values so PATROL starts with a clean occupancy layer.
-
         Return whether a target cell was found.
     */
 
     const int mapHeight = terrain->get_map_height();
     const int mapWidth = terrain->get_map_width();
 
-    // Reusable helper: zero out any remaining positive values in the layer so
-    // the PATROL state starts with a clean occupancy map.
+
     const auto clear_positive_values = [&layer]()
     {
         layer.for_each([](float &v) { if (v > 0.0f) v = 0.0f; });
     };
 
-    // Count positive cells before propagation.
-    // A count of 0 or 1 means only the fresh CHASE seed remains (player was just
-    // lost): skip seeking and transition directly to PATROL (requirement 9).
+
     int positiveCellCount = 0;
     for (int row = 0; row < mapHeight; ++row)
     {
@@ -741,14 +725,10 @@ bool enemy_seek_player(MapLayer<float> &layer, AStarAgent *enemy)
 
     if (positiveCellCount <= 1)
     {
-        // Clear the residual seed so PATROL begins with a clean occupancy layer.
         clear_positive_values();
         return false;
     }
 
-    // Number of propagation rounds used to advance the wave-search frontier.
-    // Each call to this function from IDLE expands the searchable area by this
-    // many cells, implementing a step-by-step wave that grows on every seek cycle.
     constexpr int SEEK_PROPAGATION_ITERATIONS = 3;
 
     // Expand the search frontier before picking the next goal.
@@ -803,7 +783,6 @@ bool enemy_seek_player(MapLayer<float> &layer, AStarAgent *enemy)
     }
     else
     {
-        // Search exhausted: clear residual positive values so PATROL starts fresh.
         clear_positive_values();
     }
 
