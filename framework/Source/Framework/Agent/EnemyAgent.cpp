@@ -102,6 +102,14 @@ bool EnemyAgent::logic_tick()
             // 5) Player moved out of sight - switch to SEEK immediately using last known position
             state = State::SEEK;
             set_movement_speed(movementSpeed);
+            {
+                // Clear the enemy's current tile so we don't immediately re-path to it
+                const auto currentGrid = terrain->get_grid_position(get_position());
+                if (terrain->is_valid_grid_position(currentGrid))
+                {
+                    terrain->seekLayer.set_value(currentGrid, 0.0f);
+                }
+            }
             // 7) Pick the closest tile with 1.0 occupancy value as goal
             if (enemy_seek_player(terrain->seekLayer, this) == false)
             {
