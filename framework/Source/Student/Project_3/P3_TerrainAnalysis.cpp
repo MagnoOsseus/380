@@ -698,17 +698,48 @@ bool enemy_seek_player(MapLayer<float> &layer, AStarAgent *enemy)
         If there are multiple cells with the same highest value, then pick the
         cell closest to the enemy.
 
-        Before searching, propagate the occupancy map a few times so that the
-        search area expands outward from whatever values remain.  This implements
-        the step-by-step "wave" search: each time the enemy arrives at its last
-        seek goal and calls this function again, the wave front advances further
-        into unexplored territory.  Using the same decay/growth as the initial
-        seeding keeps the gradient consistent.
+        Before searching, check how many cells already have positive values.
+        If only one positive cell exists (the fresh seed from when the player was
+        last spotted), the AI has just lost the player: clear that seed and return
+        false so the state machine enters PATROL (requirement 9 - if AI loses player,
+        behavior: PATROL).
+
+        If multiple positive cells exist (propagated wave from a previous seek
+        cycle), expand the search frontier and find the best next goal, returning
+        true to continue seeking.
+
+        When no target can be found after propagation, clear any residual positive
+        values so PATROL starts with a clean occupancy layer.
 
         Return whether a target cell was found.
     */
 
-    // Expand the search frontier before picking the next goal
+    const int mapHeight = terrain->get_map_height();
+    const int mapWidth = terrain->get_map_width();
+
+    // Count positive cells before propagation.
+    // A count of 0 or 1 means only the fresh CHASE seed remains (player was just
+    // lost): skip seeking and transition directly to PATROL (requirement 9).
+    int positiveCellCount = 0;
+    for (int row = 0; row < mapHeight; ++row)
+    {
+        for (int col = 0; col < mapWidth; ++col)
+        {
+            if (layer.get_value(row, col) > 0.0f)
+            {
+                ++positiveCellCount;
+            }
+        }
+    }
+
+    if (positiveCellCount <= 1)
+    {
+        // Clear the residual seed so PATROL begins with a clean occupancy layer.
+        layer.for_each([](float &v) { if (v > 0.0f) v = 0.0f; });
+        return false;
+    }
+
+    // Expand the search frontier before picking the next goal.
     for (int i = 0; i < 3; ++i)
         propagate_solo_occupancy(layer, 0.05f, 0.15f);
 
@@ -718,8 +749,6 @@ bool enemy_seek_player(MapLayer<float> &layer, AStarAgent *enemy)
         return false;
     }
 
-    const int mapHeight = terrain->get_map_height();
-    const int mapWidth = terrain->get_map_width();
     const float epsilon = 0.0001f;
 
     float highestValue = 0.0f;
@@ -759,6 +788,11 @@ bool enemy_seek_player(MapLayer<float> &layer, AStarAgent *enemy)
     if (foundTarget == true)
     {
         enemy->path_to(terrain->get_world_position(targetGridPos));
+    }
+    else
+    {
+        // Search exhausted: clear residual positive values so PATROL starts fresh.
+        layer.for_each([](float &v) { if (v > 0.0f) v = 0.0f; });
     }
 
     return foundTarget;
