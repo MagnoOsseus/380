@@ -717,6 +717,13 @@ bool enemy_seek_player(MapLayer<float> &layer, AStarAgent *enemy)
     const int mapHeight = terrain->get_map_height();
     const int mapWidth = terrain->get_map_width();
 
+    // Reusable helper: zero out any remaining positive values in the layer so
+    // the PATROL state starts with a clean occupancy map.
+    const auto clear_positive_values = [&layer]()
+    {
+        layer.for_each([](float &v) { if (v > 0.0f) v = 0.0f; });
+    };
+
     // Count positive cells before propagation.
     // A count of 0 or 1 means only the fresh CHASE seed remains (player was just
     // lost): skip seeking and transition directly to PATROL (requirement 9).
@@ -735,12 +742,17 @@ bool enemy_seek_player(MapLayer<float> &layer, AStarAgent *enemy)
     if (positiveCellCount <= 1)
     {
         // Clear the residual seed so PATROL begins with a clean occupancy layer.
-        layer.for_each([](float &v) { if (v > 0.0f) v = 0.0f; });
+        clear_positive_values();
         return false;
     }
 
+    // Number of propagation rounds used to advance the wave-search frontier.
+    // Each call to this function from IDLE expands the searchable area by this
+    // many cells, implementing a step-by-step wave that grows on every seek cycle.
+    constexpr int SEEK_PROPAGATION_ITERATIONS = 3;
+
     // Expand the search frontier before picking the next goal.
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < SEEK_PROPAGATION_ITERATIONS; ++i)
         propagate_solo_occupancy(layer, 0.05f, 0.15f);
 
     const auto enemyGridPos = terrain->get_grid_position(enemy->get_position());
@@ -792,7 +804,7 @@ bool enemy_seek_player(MapLayer<float> &layer, AStarAgent *enemy)
     else
     {
         // Search exhausted: clear residual positive values so PATROL starts fresh.
-        layer.for_each([](float &v) { if (v > 0.0f) v = 0.0f; });
+        clear_positive_values();
     }
 
     return foundTarget;
